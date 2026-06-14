@@ -110,8 +110,8 @@ export default function SellerReturnFlow({ role }) {
 
     const requiredPhotos = requirements?.photos || 4;
     const filesCount = Object.keys(filesToUpload).length;
-    if (filesCount < requiredPhotos) {
-      alert(`Please upload all ${requiredPhotos} required photos for condition verification.`);
+    if (filesCount === 0) {
+      alert("Please upload at least 1 photo for condition verification.");
       return;
     }
 
@@ -120,14 +120,18 @@ export default function SellerReturnFlow({ role }) {
       const keys = {};
 
       // 1) Direct-to-S3 browser uploads using presigned URLs
-      for (let i = 0; i < requiredPhotos; i++) {
+      const fileIndices = Object.keys(filesToUpload).sort((a, b) => Number(a) - Number(b));
+      for (let idx = 0; idx < fileIndices.length; idx++) {
+        const i = fileIndices[idx];
         const file = filesToUpload[i];
-        setUploadProgress(`Requesting presigned upload URL for photo ${i + 1}...`);
+        if (!file) continue;
+        
+        setUploadProgress(`Requesting presigned upload URL for photo ${idx + 1} of ${filesCount}...`);
         
         // request upload key and presigned URL
         const uploadResult = await requestUpload(file.name, file.type, role);
         
-        setUploadProgress(`Uploading photo ${i + 1} of ${requiredPhotos} directly to Amazon S3...`);
+        setUploadProgress(`Uploading photo ${idx + 1} of ${filesCount} directly to Amazon S3...`);
         // Upload directly to S3
         await uploadFileToS3(uploadResult.uploadUrl, file, file.type);
         
@@ -268,10 +272,10 @@ export default function SellerReturnFlow({ role }) {
                 {/* Photo Guides upload grid */}
                 <div>
                   <span className="block text-sm font-bold text-gray-900 mb-1">
-                    Upload required returned photos (Upload direct to AWS S3)
+                    Upload returned photos (Upload direct to AWS S3)
                   </span>
                   <span className="text-xs text-gray-500 block mb-3">
-                    Amazon Certified grading requires exactly {requirements.photos} photos mapping to the positions below.
+                    Amazon Certified grading allows up to {requirements.photos} photos. For testing, you can upload any number of photos (at least 1).
                   </span>
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -309,7 +313,7 @@ export default function SellerReturnFlow({ role }) {
                                 {guideName}
                               </span>
                               <span className="text-[8px] text-emerald-600 font-semibold mt-1">
-                                [Required]
+                                {idx === 0 ? "[Required]" : "[Optional]"}
                               </span>
                             </>
                           )}

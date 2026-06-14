@@ -149,7 +149,7 @@ export async function checkPurchaseRisk(req, res, next) {
         throw new Error("Gemini API key is not configured. Falling back to rule-based engine.");
       }
 
-      const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
       const prompt = `Analyze these retail signals. Determine if there is a conflict. If return risk exceeds 50%, flag an intervention.
 Input Context: ${JSON.stringify(deepContextPayload)}
 Instructions: Determine the probability of return. If the category is electronics, check carrier locks and compatibility.`;

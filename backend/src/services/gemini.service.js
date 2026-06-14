@@ -5,7 +5,7 @@ import { GRADING_REQUIREMENTS } from "../utils/gradingRequirements.js";
 import { GEMINI_API_KEY } from "../../config/setting.js";
 
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
+const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
 
 // ---- dynamic requirements cache ----
 const CACHE_FILE = "./src/utils/requirementsCache.json";
