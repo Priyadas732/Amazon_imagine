@@ -1,0 +1,156 @@
+[
+  {
+    "return_id": "ret-samsung-m34-001",
+    "created_at": "2026-06-14T10:00:00.000Z",
+    "event_type": "RETURN_INITIATED",
+    "description": "Return request created. Awaiting warehouse arrival.",
+    "operator": "SYSTEM"
+  },
+  {
+    "return_id": "ret-nike-pegasus-002",
+    "created_at": "2026-06-13T09:00:00.000Z",
+    "event_type": "RETURN_INITIATED",
+    "description": "Return request created.",
+    "operator": "SYSTEM"
+  },
+  {
+    "return_id": "ret-nike-pegasus-002",
+    "created_at": "2026-06-14T11:30:00.000Z",
+    "event_type": "RECEIVED_AND_BINNED",
+    "description": "Item received at Bengaluru Warehouse and allocated to Bin B-12.",
+    "operator": "op-102"
+  },
+  {
+    "return_id": "ret-prestige-induction-003",
+    "created_at": "2026-06-14T14:15:00.000Z",
+    "event_type": "RETURN_INITIATED",
+    "description": "Return request created. Awaiting arrival.",
+    "operator": "SYSTEM"
+  },
+  {
+    "return_id": "ret-lego-classic-004",
+    "created_at": "2026-06-12T08:00:00.000Z",
+    "event_type": "RETURN_INITIATED",
+    "description": "Return request created.",
+    "operator": "SYSTEM"
+  },
+  {
+    "return_id": "ret-lego-classic-004",
+    "created_at": "2026-06-13T10:00:00.000Z",
+    "event_type": "RECEIVED",
+    "description": "Item received at sorting station.",
+    "operator": "op-101"
+  },
+  {
+    "return_id": "ret-lego-classic-004",
+    "created_at": "2026-06-13T14:00:00.000Z",
+    "event_type": "GRADED",
+    "description": "AI model graded 'Like New'. Route set to RESELL.",
+    "operator": "AI_ENGINE"
+  },
+  {
+    "return_id": "ret-lego-classic-004",
+    "created_at": "2026-06-14T09:00:00.000Z",
+    "event_type": "DISPATCHED",
+    "description": "Item dispatched to reseller hub.",
+    "operator": "op-105"
+  },
+  {
+    "return_id": "ret-boat-rockerz-005",
+    "created_at": "2026-06-14T16:00:00.000Z",
+    "event_type": "RETURN_INITIATED",
+    "description": "Return request created. Awaiting arrival.",
+    "operator": "SYSTEM"
+  },
+  {
+    "return_id": "ret-prestige-mixer-006",
+    "created_at": "2026-06-14T12:00:00.000Z",
+    "event_type": "PHOTOS_INCOMPLETE",
+    "description": "Return request initiated. Flagged for missing / incomplete photos.",
+    "operator": "SYSTEM"
+  },
+  {
+    "return_id": "ret-samsung-m34-001",
+    "created_at": "2026-06-14T09:12:00.000Z",
+    "event_type": "GRADED",
+    "description": "AI graded as \"Very Good\"",
+    "operator": "AI_ENGINE"
+  },
+  {
+    "return_id": "ret-samsung-m34-001",
+    "created_at": "2026-06-14T10:45:00.000Z",
+    "event_type": "NOTIFICATION",
+    "description": "Cashify notification triggered",
+    "operator": "SYSTEM"
+  },
+  {
+    "return_id": "ret-samsung-m34-001",
+    "created_at": "2026-06-14T11:00:00.000Z",
+    "event_type": "AWAITING",
+    "description": "Awaiting arrival at Sorting Bay",
+    "operator": "SYSTEM"
+  },
+  {
+    "return_id": "ret-nike-pegasus-002",
+    "created_at": "2026-06-13T09:00:00.000Z",
+    "event_type": "RETURN_INITIATED",
+    "description": "Return request created.",
+    "operator": "SYSTEM"
+  },
+  {
+    "return_id": "ret-nike-pegasus-002",
+    "created_at": "2026-06-14T11:30:00.000Z",
+    "event_type": "RECEIVED_AND_BINNED",
+    "description": "Item received at Sorting Bay and allocated to Bin B-12.",
+    "operator": "op-102"
+  },
+  {
+    "return_id": "ret-prestige-induction-003",
+    "created_at": "2026-06-14T14:15:00.000Z",
+    "event_type": "RETURN_INITIATED",
+    "description": "Return request created. Awaiting arrival.",
+    "operator": "SYSTEM"
+  },
+  {
+    "return_id": "ret-lego-classic-004",
+    "created_at": "2026-06-12T08:00:00.000Z",
+    "event_type": "RETURN_INITIATED",
+    "description": "Return request created.",
+    "operator": "SYSTEM"
+  },
+  {
+    "return_id": "ret-lego-classic-004",
+    "created_at": "2026-06-13T10:00:00.000Z",
+    "event_type": "RECEIVED",
+    "description": "Item received at sorting station.",
+    "operator": "op-101"
+  },
+  {
+    "return_id": "ret-lego-classic-004",
+    "created_at": "2026-06-13T14:00:00.000Z",
+    "event_type": "GRADED",
+    "description": "AI model graded 'Like New'. Route set to DONATE.",
+    "operator": "AI_ENGINE"
+  },
+  {
+    "return_id": "ret-lego-classic-004",
+    "created_at": "2026-06-14T09:00:00.000Z",
+    "event_type": "DISPATCHED",
+    "description": "Item dispatched to reseller hub.",
+    "operator": "op-105"
+  },
+  {
+    "return_id": "ret-boat-rockerz-005",
+    "created_at": "2026-06-14T16:00:00.000Z",
+    "event_type": "RETURN_INITIATED",
+    "description": "Return request created. Awaiting arrival.",
+    "operator": "SYSTEM"
+  },
+  {
+    "return_id": "ret-prestige-mixer-006",
+    "created_at": "2026-06-14T12:00:00.000Z",
+    "event_type": "PHOTOS_INCOMPLETE",
+    "description": "Return request initiated. Flagged for missing / incomplete photos.",
+    "operator": "SYSTEM"
+  }
+]

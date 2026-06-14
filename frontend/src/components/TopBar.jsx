@@ -120,14 +120,7 @@ export default function TopBar({ currentRole, onRoleChange }) {
               Dashboard
             </NavLink>
           )}
-          <NavLink
-            to="/seller/return"
-            className={({ isActive }) =>
-              `hover:text-accent-yellow transition-colors ${isActive ? "text-accent-yellow font-bold" : "text-surface-variant"}`
-            }
-          >
-            Sell / Return Form
-          </NavLink>
+
           <NavLink
             to="/buyer"
             className={({ isActive }) =>
@@ -152,6 +145,7 @@ export default function TopBar({ currentRole, onRoleChange }) {
           >
             Ecosystem Partners
           </NavLink>
+
           <span className="text-green-400 flex items-center gap-1 cursor-pointer hover:text-green-300 transition-colors">
             <Leaf className="w-3.5 h-3.5 fill-current" /> Climate Pledge Friendly
           </span>

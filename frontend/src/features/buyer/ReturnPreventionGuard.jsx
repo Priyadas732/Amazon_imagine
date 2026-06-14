@@ -86,9 +86,9 @@ export default function ReturnPreventionGuard({
           <button
             type="button"
             onClick={() => onSwapSpec(suggestedAlternativeSpecs)}
-            className="w-full bg-secondary-container hover:bg-[#e68a00] text-ink-black font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 text-xs uppercase tracking-wider cursor-pointer border-[0.5px] border-outline-variant"
+            className="w-full bg-[#fbbc04] hover:bg-[#e68a00] text-ink-black font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 text-[13px] cursor-pointer shadow-sm"
           >
-            <span className="material-symbols-outlined">swap_horiz</span>
+            <span className="material-symbols-outlined font-bold text-[18px]">swap_horiz</span>
             {uiCopy.actionButtonText || `Switch to Size ${suggestedAlternativeSpecs.size || suggestedAlternativeSpecs.carrier}`}
           </button>
         )}
@@ -105,14 +105,14 @@ export default function ReturnPreventionGuard({
           </button>
         )}
 
-        {/* Default / fallback Scan Button if no warning or not smart-swap/camera-verification */}
-        {(!showAlert || (interventionStrategy !== "SMART_SWAP" && interventionStrategy !== "CAMERA_VERIFICATION")) && (
+        {/* Default / fallback Scan Button if no warning or not camera-verification */}
+        {(!showAlert || interventionStrategy !== "CAMERA_VERIFICATION") && (
           <button
             type="button"
             onClick={() => onLaunchCamera(preventionRules?.virtualTestType || "A4_SPATIAL_SCAN")}
-            className="w-full bg-white border-[0.5px] border-primary-container text-primary-container font-bold py-4 rounded-xl hover:bg-primary-container/5 transition-all flex items-center justify-center gap-2"
+            className="w-full bg-white border border-outline-variant text-ink-black font-bold py-3.5 rounded-xl hover:bg-surface-container-low transition-all flex items-center justify-center gap-2 text-[13px] shadow-sm cursor-pointer"
           >
-            <span className="material-symbols-outlined">view_in_ar</span>
+            <span className="material-symbols-outlined font-bold text-[18px]">view_in_ar</span>
             Launch AR Try-on
           </button>
         )}
@@ -120,9 +120,9 @@ export default function ReturnPreventionGuard({
         <button
           type="button"
           onClick={() => onLaunchCamera(preventionRules?.virtualTestType || "A4_SPATIAL_SCAN")}
-          className="w-full text-link-blue font-label-lg hover:underline flex items-center justify-center gap-2 pt-2 bg-transparent border-none cursor-pointer"
+          className="w-full text-[#008296] font-bold text-[11px] hover:underline flex items-center justify-center gap-2 pt-2 bg-transparent border-none cursor-pointer"
         >
-          <span className="material-symbols-outlined text-[18px]">rule</span>
+          <span className="material-symbols-outlined text-[16px]">rule</span>
           Interactive Size Guide
         </button>
       </div>

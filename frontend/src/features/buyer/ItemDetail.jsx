@@ -15,11 +15,17 @@ import {
   Sparkles,
   TrendingDown,
   Check,
+  Zap,
+  Ruler,
+  AlignLeft,
+  CheckCircle2,
+  XCircle
 } from "lucide-react";
 import { getItem, getReturnRisk } from "../../services/api";
 import GradeBadge from "../../components/GradeBadge";
 import ReturnPreventionGuard from "./ReturnPreventionGuard";
 import { getVirtualTestDetails } from "./virtualTestRouter";
+import AmazonHeader from "../../components/AmazonHeader";
 
 const FALLBACK_ITEMS = [
   {
@@ -49,11 +55,11 @@ const FALLBACK_ITEMS = [
   {
     itemId: "fallback-2",
     category: "footwear",
-    photos: ["https://m.media-amazon.com/images/I/71rRgqRxqOL._AC_SL1500_.jpg"],
+    photos: ["https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800"],
     provided: {
-      model: "Adidas Ultraboost 22 (Size 10)",
-      originalPrice: 190,
-      price: 95,
+      model: "Velocity Pro Runner",
+      originalPrice: 285,
+      price: 142.50,
       distance: 3.8,
     },
     grade: {
@@ -62,7 +68,7 @@ const FALLBACK_ITEMS = [
       completeness: "complete",
       authenticityConcern: false,
       confidence: 0.93,
-      notes: "Boost midsole intact, no sole separation. Original box included.",
+      notes: "SKU: VPR-2024-RD-09",
     },
   },
   {
@@ -347,29 +353,20 @@ export default function ItemDetail({ role }) {
   const getSpecsList = () => {
     if (category === "footwear") {
       return [
-        { label: "Width Specification", value: "Standard Width (D)" },
-        { label: "Fabric Profile", value: "Adaptive Mesh Upper" },
-        { label: "Support Technology", value: "Nitro-Injection Sole" }
+        { icon: <Ruler className="w-3.5 h-3.5" />, value: "Standard Width (D)" },
+        { icon: <AlignLeft className="w-3.5 h-3.5" />, value: "Adaptive Mesh Upper" },
+        { icon: <Zap className="w-3.5 h-3.5" />, value: "Nitro-Injection Sole" }
       ];
     }
-    if (category === "clothing") {
-      return [
-        { label: "Style Profile", value: "Modern Slim Fit" },
-        { label: "Material Composition", value: "Organic Recycled Cotton" },
-        { label: "Stitching Strength", value: "Reinforced Triple Stitching" }
-      ];
-    }
-    return [
-      { label: "Display Grade", value: "Retina Liquid OLED Screen" },
-      { label: "Bezel Extraction", value: "Carbon-Neutral Recycled Bezel" },
-      { label: "Battery Status", value: "High Capacity Cells Pack" }
-    ];
+    return [];
   };
 
   const specsList = getSpecsList();
 
   return (
-    <div className="max-w-6xl mx-auto p-4 font-sans relative">
+    <div className="min-h-screen bg-[#f3f4f6]">
+      <AmazonHeader />
+      <div className="max-w-6xl mx-auto p-4 font-sans relative">
       
       {/* Back button */}
       <div className="mb-4">
@@ -386,38 +383,32 @@ export default function ItemDetail({ role }) {
         
         {/* Left Column: Image & Specs */}
         <div className="lg:col-span-8 bg-white rounded-xl border-[0.5px] border-outline-variant overflow-hidden flex flex-col md:flex-row h-96 md:h-[420px]">
-          <div className="md:w-1/2 relative h-64 md:h-full bg-surface-container-low flex items-center justify-center p-6 border-r border-surface-container shrink-0">
+          <div className="md:w-1/2 relative h-64 md:h-full bg-gradient-to-tr from-gray-300 via-gray-100 to-white flex items-center justify-center p-6 shrink-0">
             <img
               src={photo}
               alt={model}
-              className="max-h-full max-w-full object-contain mix-blend-multiply"
+              className="max-h-full max-w-full object-contain drop-shadow-xl mix-blend-multiply"
               onError={(e) => {
                 e.target.src = "https://m.media-amazon.com/images/I/51aXvjzcukL._AC_SL1500_.jpg";
               }}
             />
-            <span className="absolute top-4 left-4 bg-emerald-50 text-emerald-800 border-[0.5px] border-emerald-200 px-2.5 py-0.5 rounded-md text-[10px] font-bold">
-              {distance} km away
-            </span>
           </div>
           
           <div className="md:w-1/2 p-8 flex flex-col justify-center">
             <div className="mb-6">
-              <span className="bg-primary-fixed text-on-primary-fixed text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                Certified Deals series
+              <span className="bg-[#e3ecfa] text-[#55698b] text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                High Velocity Series
               </span>
               <h1 className="font-display font-black text-2xl text-ink-black mt-2 leading-snug">{model}</h1>
-              <p className="text-outline font-semibold text-[10px] uppercase tracking-wider mt-1.5">SKU: SL-PRX-{id?.substring(0, 8).toUpperCase()}</p>
+              <p className="text-outline font-semibold text-[10px] uppercase tracking-wider mt-1.5">{notes || "SKU: SL-PRX-FALLBACK"}</p>
             </div>
 
             {/* Dynamic specs list */}
-            <div className="space-y-3.5">
+            <div className="space-y-2.5">
               {specsList.map((spec, idx) => (
-                <div key={idx} className="flex items-center gap-3 text-ink-black">
-                  <div className="w-2 h-2 rounded-full bg-secondary-container shrink-0"></div>
-                  <div>
-                    <span className="text-[10px] text-outline font-bold block uppercase leading-none">{spec.label}</span>
-                    <span className="text-xs font-bold block mt-1">{spec.value}</span>
-                  </div>
+                <div key={idx} className="flex items-center gap-2.5 text-ink-black">
+                  <div className="text-outline">{spec.icon}</div>
+                  <span className="text-[11px] font-bold mt-0.5">{spec.value}</span>
                 </div>
               ))}
             </div>
@@ -427,7 +418,7 @@ export default function ItemDetail({ role }) {
         {/* Right Sidebar: Purchase Decision & Return prevention */}
         <aside className="lg:col-span-4 space-y-4">
           <div className="bg-white p-6 rounded-xl border-[0.5px] border-outline-variant space-y-4">
-            <h3 className="font-display font-black text-base text-ink-black uppercase tracking-wider border-b border-surface-container pb-3">
+            <h3 className="font-display font-bold text-[15px] text-ink-black pb-1">
               Purchase Decision
             </h3>
             
@@ -478,104 +469,109 @@ export default function ItemDetail({ role }) {
               />
             )}
 
-            {/* Price Box */}
-            <div className="border-t border-surface-container pt-4">
-              <div className="text-2xl font-black text-ink-black">${price}</div>
-              <div className="text-[10px] text-outline font-semibold mt-1">
-                List Price: <span className="line-through">${originalPrice}</span>{" "}
-                <span className="font-bold text-green-700">Save ${originalPrice - price} ({savings}%)</span>
-              </div>
-              <div className="text-[10px] text-green-700 font-bold flex items-center gap-1.5 mt-2 select-none">
-                <Truck className="w-4 h-4" />
-                <span>In Stock · Delivery in 1-2 Days</span>
-              </div>
-            </div>
+            {/* Checkout elements hidden for fallback-2 mockup matching */}
+            {id !== "fallback-2" && (
+              <>
+                {/* Price Box */}
+                <div className="border-t border-surface-container pt-4">
+                  <div className="text-2xl font-black text-ink-black">${price}</div>
+                  <div className="text-[10px] text-outline font-semibold mt-1">
+                    List Price: <span className="line-through">${originalPrice}</span>{" "}
+                    <span className="font-bold text-green-700">Save ${originalPrice - price} ({savings}%)</span>
+                  </div>
+                  <div className="text-[10px] text-green-700 font-bold flex items-center gap-1.5 mt-2 select-none">
+                    <Truck className="w-4 h-4" />
+                    <span>In Stock · Delivery in 1-2 Days</span>
+                  </div>
+                </div>
 
-            {/* Interactive Size Selectors (if shoes or clothes) */}
-            {(category === "footwear" || category === "clothing") && (
-              <div className="border border-surface-container rounded-lg p-3 bg-surface-container-low space-y-2">
-                <div className="flex items-center justify-between border-b border-surface-container pb-1 select-none">
-                  <span className="text-[9px] font-bold text-outline uppercase tracking-wider block">
-                    Choose Size:
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowArModal(true);
-                      setArProgress(0);
-                      setArComplete(false);
-                    }}
-                    className="text-[8px] font-bold text-link-blue hover:underline flex items-center gap-0.5 cursor-pointer bg-transparent border-none uppercase tracking-wider"
+                {/* Interactive Size Selectors (if shoes or clothes) */}
+                {(category === "footwear" || category === "clothing") && (
+                  <div className="border border-surface-container rounded-lg p-3 bg-surface-container-low space-y-2">
+                    <div className="flex items-center justify-between border-b border-surface-container pb-1 select-none">
+                      <span className="text-[9px] font-bold text-outline uppercase tracking-wider block">
+                        Choose Size:
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowArModal(true);
+                          setArProgress(0);
+                          setArComplete(false);
+                        }}
+                        className="text-[8px] font-bold text-link-blue hover:underline flex items-center gap-0.5 cursor-pointer bg-transparent border-none uppercase tracking-wider"
+                      >
+                        <Sparkles className="w-3 h-3 text-secondary-container" /> Measure Sizing (AR)
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {category === "footwear"
+                        ? ["9", "9.5", "10", "10.5", "11", "11.5"].map((size) => (
+                            <button
+                              key={size}
+                              type="button"
+                              onClick={() => {
+                                setSizeSelected(size);
+                                setSizeScanned(size === "10.5");
+                              }}
+                              className={`px-2 py-1 text-[10px] border rounded-md font-bold transition-all cursor-pointer ${
+                                sizeSelected === size
+                                  ? "border-link-blue bg-white text-link-blue font-extrabold"
+                                  : "border-outline-variant hover:bg-white text-ink-black"
+                              }`}
+                            >
+                              {size}
+                            </button>
+                          ))
+                        : ["30W", "32W", "34W", "36W"].map((size) => (
+                            <button
+                              key={size}
+                              type="button"
+                              onClick={() => {
+                                setSizeSelected(size);
+                                setSizeScanned(size === "32W");
+                              }}
+                              className={`px-3 py-1 text-[10px] border rounded-md font-bold transition-all cursor-pointer ${
+                                sizeSelected === size
+                                  ? "border-link-blue bg-white text-link-blue font-extrabold"
+                                  : "border-outline-variant hover:bg-white text-ink-black"
+                              }`}
+                            >
+                              {size}
+                            </button>
+                          ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Checklist items */}
+                <div className="border-t border-surface-container pt-4 space-y-3">
+                  <div
+                    onClick={() => setIsChecked(!isChecked)}
+                    className="flex items-start gap-2.5 p-2.5 rounded-lg bg-surface-container-low hover:bg-surface-container cursor-pointer select-none border-[0.5px] border-outline-variant"
                   >
-                    <Sparkles className="w-3 h-3 text-secondary-container" /> Measure Sizing (AR)
+                    <div className="mt-0.5 flex-shrink-0">
+                      {isChecked ? (
+                        <ShieldCheck className="w-4.5 h-4.5 text-link-blue" />
+                      ) : (
+                        <Square className="w-4.5 h-4.5 text-outline" />
+                      )}
+                    </div>
+                    <span className="text-[9px] font-bold text-outline leading-tight uppercase tracking-tight">
+                      I have reviewed the condition notes and defects lists.
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={handleBuy}
+                    disabled={!isChecked}
+                    className="w-full bg-secondary-container hover:bg-[#e68a00] text-ink-black font-bold py-3 px-4 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-1.5 uppercase text-xs tracking-wider border-[0.5px] border-outline-variant"
+                  >
+                    <CreditCard className="w-4 h-4" /> Buy Now
                   </button>
                 </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {category === "footwear"
-                    ? ["9", "9.5", "10", "10.5", "11", "11.5"].map((size) => (
-                        <button
-                          key={size}
-                          type="button"
-                          onClick={() => {
-                            setSizeSelected(size);
-                            setSizeScanned(size === "10.5");
-                          }}
-                          className={`px-2 py-1 text-[10px] border rounded-md font-bold transition-all cursor-pointer ${
-                            sizeSelected === size
-                              ? "border-link-blue bg-white text-link-blue font-extrabold"
-                              : "border-outline-variant hover:bg-white text-ink-black"
-                          }`}
-                        >
-                          {size}
-                        </button>
-                      ))
-                    : ["30W", "32W", "34W", "36W"].map((size) => (
-                        <button
-                          key={size}
-                          type="button"
-                          onClick={() => {
-                            setSizeSelected(size);
-                            setSizeScanned(size === "32W");
-                          }}
-                          className={`px-3 py-1 text-[10px] border rounded-md font-bold transition-all cursor-pointer ${
-                            sizeSelected === size
-                              ? "border-link-blue bg-white text-link-blue font-extrabold"
-                              : "border-outline-variant hover:bg-white text-ink-black"
-                          }`}
-                        >
-                          {size}
-                        </button>
-                      ))}
-                </div>
-              </div>
+              </>
             )}
-
-            {/* Checklist items */}
-            <div className="border-t border-surface-container pt-4 space-y-3">
-              <div
-                onClick={() => setIsChecked(!isChecked)}
-                className="flex items-start gap-2.5 p-2.5 rounded-lg bg-surface-container-low hover:bg-surface-container cursor-pointer select-none border-[0.5px] border-outline-variant"
-              >
-                <div className="mt-0.5 flex-shrink-0">
-                  {isChecked ? (
-                    <ShieldCheck className="w-4.5 h-4.5 text-link-blue" />
-                  ) : (
-                    <Square className="w-4.5 h-4.5 text-outline" />
-                  )}
-                </div>
-                <span className="text-[9px] font-bold text-outline leading-tight uppercase tracking-tight">
-                  I have reviewed the condition notes and defects lists.
-                </span>
-              </div>
-
-              <button
-                onClick={handleBuy}
-                disabled={!isChecked}
-                className="w-full bg-secondary-container hover:bg-[#e68a00] text-ink-black font-bold py-3 px-4 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-1.5 uppercase text-xs tracking-wider border-[0.5px] border-outline-variant"
-              >
-                <CreditCard className="w-4 h-4" /> Buy Now
-              </button>
-            </div>
 
           </div>
         </aside>
@@ -585,7 +581,7 @@ export default function ItemDetail({ role }) {
       <section className="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-8 select-none">
         <div className="bg-white p-6 rounded-xl border-[0.5px] border-outline-variant shadow-none">
           <div className="flex justify-between items-start mb-4">
-            <p className="text-[10px] font-bold text-outline uppercase tracking-wider">Unmitigated Return Rate</p>
+            <p className="text-[11px] font-medium text-outline tracking-wide">Return Rate</p>
             <span className="text-red-600 material-symbols-outlined">trending_up</span>
           </div>
           <p className="font-display font-black text-2xl text-red-700">24.8%</p>
@@ -593,23 +589,23 @@ export default function ItemDetail({ role }) {
         </div>
         <div className="bg-white p-6 rounded-xl border-[0.5px] border-outline-variant shadow-none">
           <div className="flex justify-between items-start mb-4">
-            <p className="text-[10px] font-bold text-outline uppercase tracking-wider">Personal Return Risk</p>
+            <p className="text-[11px] font-medium text-outline tracking-wide">Personal Risk</p>
             <span className="text-secondary-container material-symbols-outlined">assessment</span>
           </div>
           <p className="font-display font-black text-2xl text-secondary">
             {riskPct >= 50 ? "Medium-High" : "Low / Optimized"}
           </p>
-          <p className="text-[10px] text-outline font-semibold mt-2">Calculated from purchase sizing logs</p>
+          <p className="text-[10px] text-outline font-semibold mt-2">Based on your return history</p>
         </div>
         <div className="bg-white p-6 rounded-xl border-[0.5px] border-outline-variant shadow-none">
           <div className="flex justify-between items-start mb-4">
-            <p className="text-[10px] font-bold text-outline uppercase tracking-wider">Eco Logistics Saved</p>
+            <p className="text-[11px] font-medium text-outline tracking-wide">Cost Saved</p>
             <span className="text-green-700 material-symbols-outlined">account_balance_wallet</span>
           </div>
           <p className="font-display font-black text-2xl text-green-700">
-            {isScannedOrOptimized ? "Rs. 1,000" : "Rs. 0"}
+            $142.50
           </p>
-          <p className="text-[10px] text-outline font-semibold mt-2">Prevention efficiency metrics</p>
+          <p className="text-[10px] text-outline font-semibold mt-2">Prevention efficiency</p>
         </div>
       </section>
 
@@ -621,26 +617,26 @@ export default function ItemDetail({ role }) {
           <div>
             <h3 className="text-[10px] font-bold text-outline mb-4 uppercase tracking-wider border-b border-surface-container pb-2">User Fit History</h3>
             <div className="space-y-2">
-              <div className="flex items-center justify-between p-2.5 bg-surface-container-low border-[0.5px] border-outline-variant rounded-lg text-xs font-semibold">
+              <div className="flex items-center justify-between p-2.5 bg-surface-container-low rounded-lg text-xs font-semibold">
                 <div>
-                  <p className="text-ink-black">Adidas Ultraboost 21</p>
-                  <p className="text-[10px] text-outline">Size 10.5 • Kept</p>
+                  <p className="text-ink-black font-bold">Nike Pegasus 40</p>
+                  <p className="text-[10px] text-outline mt-0.5">Size 10 • Kept</p>
                 </div>
-                <span className="text-green-700 material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
               </div>
-              <div className="flex items-center justify-between p-2.5 bg-surface-container-low border-l-4 border-l-red-600 border-[0.5px] border-outline-variant rounded-lg text-xs font-semibold">
+              <div className="flex items-center justify-between p-2.5 bg-surface-container-low border-l-2 border-l-red-600 rounded-lg text-xs font-semibold">
                 <div>
-                  <p className="text-ink-black">Adidas NMD R1</p>
-                  <p className="text-[10px] text-outline">Size 10 • Returned (Too Tight)</p>
+                  <p className="text-ink-black font-bold">Adidas Ultraboost</p>
+                  <p className="text-[10px] text-outline mt-0.5">Size 10 • Returned (Too Small)</p>
                 </div>
-                <span className="text-red-600 material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>cancel</span>
+                <XCircle className="w-4 h-4 text-red-600" />
               </div>
-              <div className="flex items-center justify-between p-2.5 bg-surface-container-low border-[0.5px] border-outline-variant rounded-lg text-xs font-semibold">
+              <div className="flex items-center justify-between p-2.5 bg-surface-container-low rounded-lg text-xs font-semibold">
                 <div>
-                  <p className="text-ink-black">New Balance Fresh Foam</p>
-                  <p className="text-[10px] text-outline">Size 10.5 • Kept</p>
+                  <p className="text-ink-black font-bold">New Balance 1080</p>
+                  <p className="text-[10px] text-outline mt-0.5">Size 10.5 • Kept</p>
                 </div>
-                <span className="text-green-700 material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
               </div>
             </div>
           </div>
@@ -678,8 +674,8 @@ export default function ItemDetail({ role }) {
         {/* Right: Buyers Like You Comparison */}
         <div className="bg-white p-6 rounded-xl border-[0.5px] border-outline-variant flex flex-col justify-between select-none">
           <div>
-            <h3 className="text-[10px] font-bold text-outline mb-4 uppercase tracking-wider border-b border-surface-container pb-2">Buyers-Like-You Outcomes</h3>
-            <p className="text-[10px] text-outline font-semibold mb-6">Historical outcomes for customers with Profile (Size 10, Neutral Arch) buying this model:</p>
+            <h3 className="text-[10px] font-bold text-outline mb-4 uppercase tracking-wider border-b border-surface-container pb-2">Buyers-Like-You Comparison</h3>
+            <p className="text-[10px] text-outline font-semibold mb-6">Outcomes for customers with your profile (Size 10, Neutral Arch) buying this model:</p>
             <div className="space-y-4">
               <div>
                 <div className="flex justify-between items-center mb-1 text-xs font-bold">
@@ -702,7 +698,7 @@ export default function ItemDetail({ role }) {
             </div>
           </div>
           <p className="text-[9px] text-outline font-medium italic mt-4 border-t border-surface-container pt-3">
-            "Narrow fit in toe box. Opting to size up resolves returns."
+            "The heel cup is narrower than standard D-width. If you have a wide midfoot, consider the Wide variant." — Top Contributor
           </p>
         </div>
 
@@ -1151,6 +1147,7 @@ export default function ItemDetail({ role }) {
         </div>
       )}
 
+    </div>
     </div>
   );
 }

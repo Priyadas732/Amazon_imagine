@@ -12,6 +12,9 @@ import AmazonEntryPage from "./features/seller/AmazonEntryPage";
 import SignInPage from "./features/seller/SignInPage";
 import CustomerDashboard from "./features/seller/CustomerDashboard";
 import DonationForm from "./features/seller/DonationForm";
+import WarehouseLogin from "./pages/warehouse/login";
+import WarehouseDashboard from "./pages/warehouse/index";
+import WarehouseLayout from "./components/warehouse/WarehouseLayout";
 
 export default function App() {
   const location = useLocation();
@@ -26,7 +29,10 @@ export default function App() {
     localStorage.setItem("current_session_role", newRole);
   };
 
-  const showGlobalHeader = location.pathname !== "/" && location.pathname !== "/signin";
+  const isWarehouseRoute = location.pathname.startsWith("/warehouse");
+  const isItemDetailRoute = location.pathname.startsWith("/buyer/item/");
+  const showGlobalHeader = location.pathname !== "/" && location.pathname !== "/signin" && !isWarehouseRoute && !isItemDetailRoute;
+  const showGlobalFooter = !isWarehouseRoute;
 
   return (
     <div className="min-h-screen bg-amazon-bg flex flex-col font-sans">
@@ -59,6 +65,17 @@ export default function App() {
           
           {/* Ecosystem Partners directory */}
           <Route path="/partners" element={<Partners role={role} />} />
+
+          {/* Warehouse routes */}
+          <Route path="/warehouse/login" element={<WarehouseLogin />} />
+          <Route 
+            path="/warehouse" 
+            element={
+              <WarehouseLayout>
+                <WarehouseDashboard />
+              </WarehouseLayout>
+            } 
+          />
           
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
@@ -66,12 +83,14 @@ export default function App() {
       </div>
 
       {/* Subtle footer */}
-      <footer className="py-8 bg-amazon-navy text-xs text-gray-400 text-center border-t border-gray-800">
-        <div className="max-w-4xl mx-auto px-4 space-y-1">
-          <p>© 1996-2026, Amazon.com, Inc. or its affiliates. All rights reserved.</p>
-          <p className="text-gray-500">SecondLife Circular Commerce Returns grading platform verified by Google Gemini AI vision.</p>
-        </div>
-      </footer>
+      {showGlobalFooter && (
+        <footer className="py-8 bg-amazon-navy text-xs text-gray-400 text-center border-t border-gray-800">
+          <div className="max-w-4xl mx-auto px-4 space-y-1">
+            <p>© 1996-2026, Amazon.com, Inc. or its affiliates. All rights reserved.</p>
+            <p className="text-gray-500">SecondLife Circular Commerce Returns grading platform verified by Google Gemini AI vision.</p>
+          </div>
+        </footer>
+      )}
     </div>
   );
 }

@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import apiRoutes from "./routes/api.routes.js";
 import disposeRoutes from "./routes/dispose.routes.js";
+import warehouseRoutes from "../warehouse/routes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
@@ -20,6 +21,7 @@ app.use(express.static("public"));
 // Mount API routes directly at root level
 app.use("/", apiRoutes);
 app.use("/", disposeRoutes);
+app.use("/", warehouseRoutes);
 
 // Health check endpoint
 app.get("/health", (_req, res) => {
