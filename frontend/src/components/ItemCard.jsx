@@ -46,7 +46,11 @@ export default function ItemCard({ item }) {
         {/* Certified Badge */}
         <div className="flex items-center gap-1 text-[11px] font-bold text-amazon-teal mb-3">
           <ShieldCheck className="w-4 h-4 fill-cyan-50 text-cyan-600" />
-          <span>Amazon Certified · AI-Verified</span>
+          <span>
+            {item.grade?.gradedBy === "fallback" 
+              ? "Amazon Certified · Standard Return" 
+              : "Amazon Certified · AI-Verified"}
+          </span>
         </div>
 
         {/* Grade */}
