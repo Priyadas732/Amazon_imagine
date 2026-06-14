@@ -8,7 +8,7 @@ export default function ItemCard({ item }) {
   // Extract item details
   const itemId = item.itemId;
   const model = item.provided?.model || item.category || "Refurbished Product";
-  const photo = item.photos?.[0] || "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=300";
+  const photo = item.photos?.[0] || "https://m.media-amazon.com/images/I/51aXvjzcukL._AC_SL1500_.jpg";
   const grade = item.grade?.grade || "Good";
   
   // Fake locations and pricing for marketplace variety
@@ -26,7 +26,7 @@ export default function ItemCard({ item }) {
           alt={model}
           className="max-h-full max-w-full object-contain mix-blend-multiply"
           onError={(e) => {
-            e.target.src = "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=300";
+            e.target.src = "https://m.media-amazon.com/images/I/51aXvjzcukL._AC_SL1500_.jpg";
           }}
         />
         {/* Distance Pin */}

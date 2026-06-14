@@ -1,14 +1,21 @@
 // frontend/src/App.jsx
 import React, { useState } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import TopBar from "./components/TopBar";
 import SellerReturnFlow from "./features/seller/SellerReturnFlow";
 import GradingResult from "./features/seller/GradingResult";
 import BuyerMarketplace from "./features/buyer/BuyerMarketplace";
 import ItemDetail from "./features/buyer/ItemDetail";
 import GreenCredits from "./features/credits/GreenCredits";
+import Partners from "./features/seller/Partners";
+import AmazonEntryPage from "./features/seller/AmazonEntryPage";
+import SignInPage from "./features/seller/SignInPage";
+import CustomerDashboard from "./features/seller/CustomerDashboard";
+import DonationForm from "./features/seller/DonationForm";
 
 export default function App() {
+  const location = useLocation();
+  
   // Global role state (shared across top navigation and page routes)
   const [role, setRole] = useState(() => {
     return localStorage.getItem("current_session_role") || "seller";
@@ -19,16 +26,23 @@ export default function App() {
     localStorage.setItem("current_session_role", newRole);
   };
 
+  const showGlobalHeader = location.pathname !== "/" && location.pathname !== "/signin";
+
   return (
     <div className="min-h-screen bg-amazon-bg flex flex-col font-sans">
       {/* Top Header Navigation */}
-      <TopBar currentRole={role} onRoleChange={handleRoleChange} />
+      {showGlobalHeader && <TopBar currentRole={role} onRoleChange={handleRoleChange} />}
 
       {/* Pages Container */}
-      <div className="flex-grow py-6">
+      <div className={`flex-grow ${showGlobalHeader ? "py-6" : ""}`}>
         <Routes>
-          {/* Main returns wizard (Default page) */}
-          <Route path="/" element={<Navigate to="/seller/return" replace />} />
+          {/* Amazon Replica Landing & Credentials */}
+          <Route path="/" element={<AmazonEntryPage />} />
+          <Route path="/signin" element={<SignInPage />} />
+          <Route path="/dashboard" element={<CustomerDashboard />} />
+          <Route path="/donate" element={<DonationForm />} />
+
+          {/* Main returns wizard */}
           <Route path="/seller/return" element={<SellerReturnFlow role={role} />} />
           
           {/* Grading results */}
@@ -43,8 +57,11 @@ export default function App() {
           {/* Green credits ledgers */}
           <Route path="/credits" element={<GreenCredits />} />
           
+          {/* Ecosystem Partners directory */}
+          <Route path="/partners" element={<Partners role={role} />} />
+          
           {/* Fallback */}
-          <Route path="*" element={<Navigate to="/seller/return" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
 

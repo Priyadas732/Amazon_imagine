@@ -1,6 +1,6 @@
 // frontend/src/features/seller/GradingResult.jsx
 import React, { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ShieldCheck, AlertTriangle, Leaf, DollarSign, Award, ArrowLeft, RefreshCw, ShoppingBag, Sparkles, Activity, CheckCircle } from "lucide-react";
 import { getItem, updateItem, getDisposition } from "../../services/api";
@@ -11,6 +11,7 @@ import Stepper from "../../components/Stepper";
 
 export default function GradingResult({ role }) {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   // Fetch item details
   const { data: item, isLoading, error, refetch } = useQuery({
@@ -99,6 +100,20 @@ export default function GradingResult({ role }) {
     }
   };
 
+  const handleAcceptAndRoute = () => {
+    if (disposition === "Donate" || disposition.startsWith("Donate")) {
+      navigate(`/partners?itemId=${id}&mode=donate`);
+    } else {
+      updateItem(id, { status: "completed" }, role)
+        .then(() => {
+          navigate("/seller/return");
+        })
+        .catch(() => {
+          navigate("/seller/return");
+        });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="max-w-4xl mx-auto p-12 text-center text-outline font-sans">
@@ -163,7 +178,7 @@ export default function GradingResult({ role }) {
     disposition = dispositionResult.decision;
     valueRecovered = dispositionResult.recovered;
     dispText = dispositionResult.reason;
-    if (disposition.startsWith("Resell as New")) creditEarned = 50;
+    if (disposition.startsWith("Resell as New")) creditEarned = 100;
     else if (disposition.startsWith("Resell")) creditEarned = 100;
     else if (disposition.startsWith("Refurbish")) creditEarned = 150;
     else if (disposition.startsWith("Donate")) creditEarned = 300;
@@ -181,7 +196,7 @@ export default function GradingResult({ role }) {
       dispText = "Bypassed warehouse. Dispatched laterally to nearby buyer Amit K.";
     } else if (gradeVal === "New" || gradeVal === "Like New") {
       disposition = "Resell";
-      creditEarned = 50;
+      creditEarned = 100;
       dispText = "Approved for direct restock as Open-Box/Like-New item.";
     } else if (gradeVal === "Very Good" || gradeVal === "Good") {
       disposition = "Refurbish";
@@ -249,10 +264,19 @@ export default function GradingResult({ role }) {
     );
   }
 
-  // Visual metrics based on grade
-  const screenScore = gradeVal === "New" ? 100 : gradeVal === "Like New" ? 96 : gradeVal === "Very Good" ? 88 : gradeVal === "Good" ? 78 : gradeVal === "Acceptable" ? 64 : 32;
-  const bezelScore = gradeVal === "New" ? 100 : gradeVal === "Like New" ? 94 : gradeVal === "Very Good" ? 82 : gradeVal === "Good" ? 72 : gradeVal === "Acceptable" ? 58 : 28;
-  const pkgScore = completeness === "complete" ? 100 : 70;
+  // Visual metrics based on conditionVector and rejection guard
+  const isRejected = gradeVal === "Damaged" && notes && notes.toLowerCase().includes("rejected");
+  const screenScore = isRejected 
+    ? 0 
+    : (item.grade?.conditionVector ? item.grade.conditionVector.cosmeticScore : (gradeVal === "New" ? 100 : gradeVal === "Like New" ? 96 : gradeVal === "Very Good" ? 88 : gradeVal === "Good" ? 78 : gradeVal === "Acceptable" ? 64 : 32));
+
+  const bezelScore = isRejected 
+    ? 0 
+    : (item.grade?.conditionVector ? Math.round((item.grade.conditionVector.structuralIntegrity || 0) * 100) : (gradeVal === "New" ? 100 : gradeVal === "Like New" ? 94 : gradeVal === "Very Good" ? 82 : gradeVal === "Good" ? 72 : gradeVal === "Acceptable" ? 58 : 28));
+
+  const pkgScore = isRejected 
+    ? 0 
+    : (completeness === "complete" ? 100 : 70);
 
   // Smart Routing Option Payout calculations
   const resellerPayout = valueRecovered > 0 ? valueRecovered : Math.round(originalPrice * 0.7);
@@ -309,29 +333,45 @@ export default function GradingResult({ role }) {
           </div>
 
           {/* Destination Confirmed card */}
-          <div className="bg-white p-6 rounded-xl border-[0.5px] border-outline-variant border-l-8 border-l-green-600 flex items-start gap-4 shadow-none select-none">
-            <div className="bg-green-100 rounded-full p-2 text-green-700 shrink-0 mt-0.5">
-              <Leaf className="w-6 h-6 fill-current" />
+          <div className={`bg-white p-6 rounded-xl border-[0.5px] border-outline-variant border-l-8 flex items-start gap-4 shadow-none select-none ${
+            isRejected ? "border-l-red-600" : "border-l-green-600"
+          }`}>
+            <div className={`rounded-full p-2 shrink-0 mt-0.5 ${
+              isRejected ? "bg-red-50 text-red-600" : "bg-green-100 text-green-700"
+            }`}>
+              {isRejected ? <AlertTriangle className="w-6 h-6" /> : <Leaf className="w-6 h-6 fill-current" />}
             </div>
             <div className="flex-grow space-y-1">
               <div className="flex justify-between items-start flex-wrap gap-2">
                 <div>
-                  <h3 className="font-display font-extrabold text-base text-ink-black leading-none">Warehouse Destination Confirmed</h3>
-                  <p className="text-[10px] text-outline mt-1 font-bold uppercase">Dynamic scoring engine selected path</p>
+                  <h3 className="font-display font-extrabold text-base text-ink-black leading-none">
+                    {isRejected ? "Return Verification Suspended" : "Warehouse Destination Confirmed"}
+                  </h3>
+                  <p className="text-[10px] text-outline mt-1 font-bold uppercase">
+                    {isRejected ? "Category Mismatch Detected by VLM" : "Dynamic scoring engine selected path"}
+                  </p>
                 </div>
-                <span className="px-2.5 py-0.5 bg-green-100 text-green-800 font-bold text-[9px] uppercase tracking-wider rounded-lg border border-green-200">
-                  Circular Approved
+                <span className={`px-2.5 py-0.5 font-bold text-[9px] uppercase tracking-wider rounded-lg border ${
+                  isRejected 
+                    ? "bg-red-50 text-red-800 border-red-200" 
+                    : "bg-green-100 text-green-800 border-green-200"
+                }`}>
+                  {isRejected ? "Verification Mismatch" : "Circular Approved"}
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 text-xs">
                 <div className="bg-surface-container-low p-3 rounded-lg border-[0.5px] border-outline-variant">
                   <p className="text-outline font-bold text-[10px] uppercase">Path Selection</p>
-                  <p className="font-black text-ink-black mt-1">{disposition}</p>
+                  <p className="font-black text-ink-black mt-1">
+                    {isRejected ? "Blocked (Mismatch)" : disposition}
+                  </p>
                 </div>
                 <div className="bg-surface-container-low p-3 rounded-lg border-[0.5px] border-outline-variant">
                   <p className="text-outline font-bold text-[10px] uppercase">CO2 Savings Status</p>
                   <p className="font-black text-ink-black mt-1">
-                    {laterallyRouted || item.status === "laterally_routed" ? "Saved 1.8 kg CO2 (Direct Delivery)" : "Optimized Hub Distribution"}
+                    {isRejected 
+                      ? "0.0 kg CO2 (Suspended)" 
+                      : (laterallyRouted || item.status === "laterally_routed" ? "Saved 1.8 kg CO2 (Direct Delivery)" : "Optimized Hub Distribution")}
                   </p>
                 </div>
               </div>
@@ -405,9 +445,18 @@ export default function GradingResult({ role }) {
 
             {/* Action buttons */}
             <div className="mt-5 flex flex-col gap-3">
-              <button className="w-full py-3 bg-secondary-container hover:bg-[#e68a00] text-ink-black font-bold rounded-xl transition-all uppercase tracking-wider text-xs border-[0.5px] border-outline-variant cursor-pointer">
-                Accept Grade & Route Item
-              </button>
+              {isRejected ? (
+                <Link
+                  to="/seller/return"
+                  className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all uppercase tracking-wider text-xs border-[0.5px] border-outline-variant text-center flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <RefreshCw className="w-4 h-4" /> Re-upload Correct Product Photo
+                </Link>
+              ) : (
+                <button onClick={handleAcceptAndRoute} className="w-full py-3 bg-secondary-container hover:bg-[#e68a00] text-ink-black font-bold rounded-xl transition-all uppercase tracking-wider text-xs border-[0.5px] border-outline-variant cursor-pointer">
+                  Accept Grade & Route Item
+                </button>
+              )}
               <button onClick={() => refetch()} className="w-full py-3 bg-white border-[0.5px] border-deep-navy text-deep-navy font-bold rounded-xl hover:bg-surface-container-low transition-all uppercase tracking-wider text-xs cursor-pointer">
                 Request Manual Review
               </button>
@@ -455,8 +504,10 @@ export default function GradingResult({ role }) {
           </div>
         </div>
 
-        {/* Signal Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-gutter select-none">
+        {!isRejected ? (
+          <>
+            {/* Signal Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-gutter select-none">
           <div className="border-[0.5px] border-outline-variant bg-surface-container-low rounded-xl p-4 flex items-center gap-4">
             <div className="bg-white p-3 rounded-lg border-[0.5px] border-outline-variant text-primary flex-shrink-0">
               <Award className="w-5 h-5 text-link-blue" />
@@ -700,6 +751,19 @@ export default function GradingResult({ role }) {
             </div>
           </div>
         )}
+      </>
+    ) : (
+      <div className="bg-[#FFF8E1] border-[0.5px] border-secondary-container p-8 rounded-xl text-center select-none space-y-4">
+        <AlertTriangle className="w-12 h-12 text-secondary-container mx-auto animate-pulse" />
+        <h3 className="font-display font-black text-lg text-secondary uppercase tracking-wider">Routing Execution Suspended</h3>
+        <p className="text-sm text-ink-black max-w-lg mx-auto font-semibold leading-relaxed">
+          This item has been rejected due to a product category mismatch (the uploaded image does not depict a <strong className="text-red-600">{category}</strong> device).
+        </p>
+        <p className="text-xs text-outline font-medium">
+          Please re-upload a clear photograph of the actual item to execute regional routing analysis.
+        </p>
+      </div>
+    )}
 
       </section>
 

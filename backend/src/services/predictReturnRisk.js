@@ -19,21 +19,21 @@ export function predictReturnRisk(userId, productId, chosenSize) {
     const isClothing = String(productId).includes("fallback-3") || String(productId).includes("clothing");
     product = {
       productId,
-      title: isClothing ? "Patagonia Torrentshell 3L Jacket" : "Nike Air Zoom Pegasus 39",
-      brand: isClothing ? "Patagonia" : "Nike",
+      title: isClothing ? "Levi's 501 Original Fit Jeans" : "Adidas Ultraboost 22",
+      brand: isClothing ? "Levi's" : "Adidas",
       category: isClothing ? "clothing" : "footwear",
-      price: isClothing ? 60 : 120,
-      returnRate: isClothing ? 0.06 : 0.28,
-      topReason: isClothing ? "true to size" : "too small",
-      sizeBias: isClothing ? "true to size" : "runs small"
+      price: isClothing ? 89 : 190,
+      returnRate: isClothing ? 0.08 : 0.22,
+      topReason: isClothing ? "true to size" : "too tight in toe box",
+      sizeBias: isClothing ? "true to size" : "runs narrow"
     };
   }
 
   // 3. Resolve cohort fit metrics or fallback
   const cohort = COHORT[product.productId] || {
     keptSize: product.category === "clothing" 
-      ? { "S": 80, "M": 95, "L": 90, "XL": 85 } 
-      : { "6": 30, "6.5": 40, "7": 45, "7.5": 85, "8": 95, "8.5": 90 }
+      ? { "30W": 75, "32W": 95, "34W": 90, "36W": 80 } 
+      : { "8.5": 30, "9": 50, "9.5": 60, "10": 55, "10.5": 92, "11": 88 }
   };
 
   const signals = [];
@@ -49,15 +49,15 @@ export function predictReturnRisk(userId, productId, chosenSize) {
     r => r.brand.toLowerCase() === product.brand.toLowerCase() && r.category.toLowerCase() === product.category.toLowerCase()
   );
 
-  const tooSmallReturns = historyReturns.filter(r => r.reason === "too-small" || r.reason === "too small");
+  const tooSmallReturns = historyReturns.filter(r => r.reason === "too-small" || r.reason === "too small" || r.reason === "too tight in toe box");
   const tooLargeReturns = historyReturns.filter(r => r.reason === "too-large" || r.reason === "too large");
 
-  if (tooSmallReturns.length > 0 && product.sizeBias === "runs small") {
+  if (tooSmallReturns.length > 0 && (product.sizeBias === "runs small" || product.sizeBias === "runs narrow")) {
     const penalty = 0.20 * tooSmallReturns.length;
     risk += penalty;
     signals.push({
       type: "history",
-      text: `Personal history check: You returned similar ${product.brand} ${product.category} items ${tooSmallReturns.length} time(s) recently due to "too small" fit issues.`
+      text: `Personal history check: You returned similar ${product.brand} ${product.category} items ${tooSmallReturns.length} time(s) recently due to fit issues.`
     });
   } else if (tooLargeReturns.length > 0 && product.sizeBias === "runs large") {
     const penalty = 0.20 * tooLargeReturns.length;
@@ -98,7 +98,7 @@ export function predictReturnRisk(userId, productId, chosenSize) {
   }
 
   // Fit nudge based on bias
-  if (product.sizeBias === "runs small" && chosenSizeStr !== "7.5" && chosenSizeStr !== "8" && chosenSizeStr !== "8.5" && chosenSizeStr !== "M" && chosenSizeStr !== "L") {
+  if (product.sizeBias === "runs narrow" && chosenSizeStr !== "10.5" && chosenSizeStr !== "11" && chosenSizeStr !== "32W" && chosenSizeStr !== "34W") {
     risk += 0.10;
   }
 
@@ -121,13 +121,13 @@ export function predictReturnRisk(userId, productId, chosenSize) {
 if (process.argv[1]?.endsWith("predictReturnRisk.js") || process.argv[1]?.endsWith("predictReturnRisk")) {
   console.log("=== RUNNING PREDICT RETURN RISK ENGINE TEST ===\n");
 
-  console.log("Test Case 1: Priya (u1) purchasing Nike shoe size 7 (Should trigger warning & suggest size 8)");
-  const res1 = predictReturnRisk("u1", "fallback-2", "7");
+  console.log("Test Case 1: Priya (u1) purchasing Adidas shoe size 10 (Should trigger warning & suggest size 10.5)");
+  const res1 = predictReturnRisk("u1", "fallback-2", "10");
   console.log(JSON.stringify(res1, null, 2));
 
   console.log("\n------------------------------------------------\n");
 
-  console.log("Test Case 2: Clean User (u2) purchasing Nike shoe size 8 (Should be low risk)");
-  const res2 = predictReturnRisk("u2", "fallback-2", "8");
+  console.log("Test Case 2: Clean User (u2) purchasing Adidas shoe size 10.5 (Should be low risk)");
+  const res2 = predictReturnRisk("u2", "fallback-2", "10.5");
   console.log(JSON.stringify(res2, null, 2));
 }

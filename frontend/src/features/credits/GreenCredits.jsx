@@ -1,28 +1,30 @@
 // frontend/src/features/credits/GreenCredits.jsx
 import React from "react";
+import { Link } from "react-router-dom";
 import { Leaf, Gift, CheckCircle, Heart } from "lucide-react";
 
 export default function GreenCredits() {
   const earningsList = [
     {
-      action: "Grade a returned item",
-      desc: "Prevent scrap waste by routing returns to resale or refurbish channels.",
-      credits: "+100 - +150 Cr"
-    },
-    {
-      action: "Donate an acceptable return",
+      action: "Donate your item for reuse ",
       desc: "Donate low-resale return items to NGO social impact directories.",
-      credits: "+300 Cr"
+      credits: "+300 Cr",
+      link: "/donate",
+      btnText: "Donate Now"
     },
     {
       action: "Buy certified used items",
       desc: "Purchase open-box return listings instead of brand new items.",
-      credits: "+50 Cr"
+      credits: "+50 Cr",
+      link: "/buyer",
+      btnText: "Shop Now"
     },
     {
       action: "Recycle damaged returns",
       desc: "Verify raw material scrap extraction for circular loop recovery.",
-      credits: "+450 Cr"
+      credits: "+450 Cr",
+      link: "/seller/return",
+      btnText: "Recycle Now"
     }
   ];
 
@@ -80,10 +82,18 @@ export default function GreenCredits() {
 
           <div className="space-y-4">
             {earningsList.map((item, idx) => (
-              <div key={idx} className="flex justify-between items-start gap-4 p-3.5 hover:bg-surface-container-low rounded-xl transition-colors border-[0.5px] border-outline-variant bg-surface-container-lowest">
+              <div key={idx} className="flex justify-between items-start gap-4 p-3.5 hover:bg-surface-container-low rounded-xl transition-colors border-[0.5px] border-outline-variant bg-surface-container-lowest text-left">
                 <div className="space-y-0.5">
                   <h4 className="text-xs font-bold text-ink-black">{item.action}</h4>
                   <p className="text-[11px] text-outline font-medium leading-tight">{item.desc}</p>
+                  {item.link && (
+                    <Link
+                      to={item.link}
+                      className="inline-block mt-2 px-3 py-1 bg-secondary-container hover:bg-[#e68a00] text-ink-black rounded text-[10px] font-bold border-[0.5px] border-outline-variant uppercase tracking-wider transition-colors cursor-pointer"
+                    >
+                      {item.btnText}
+                    </Link>
+                  )}
                 </div>
                 <span className="text-xs font-black text-green-700 whitespace-nowrap bg-emerald-50 px-2 py-0.5 border-[0.5px] border-emerald-200 rounded-lg">
                   {item.credits}

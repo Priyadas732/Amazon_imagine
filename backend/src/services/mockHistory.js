@@ -6,8 +6,8 @@ export const USERS = {
     userId: "u1",
     name: "Priya",
     returns: [
-      { brand: "Nike", category: "footwear", size: "7", reason: "too small" },
-      { brand: "Nike", category: "footwear", size: "7", reason: "too small" }
+      { brand: "Adidas", category: "footwear", size: "10", reason: "too tight in toe box" },
+      { brand: "Adidas", category: "footwear", size: "10", reason: "too tight in toe box" }
     ]
   },
   u2: {
@@ -20,21 +20,21 @@ export const USERS = {
 export const PRODUCTS = {
   "fallback-2": {
     productId: "fallback-2",
-    title: "Nike Air Zoom Pegasus 39",
-    brand: "Nike",
+    title: "Adidas Ultraboost 22",
+    brand: "Adidas",
     category: "footwear",
-    price: 120,
-    returnRate: 0.28,
-    topReason: "too small",
-    sizeBias: "runs small"
+    price: 190,
+    returnRate: 0.22,
+    topReason: "too tight in toe box",
+    sizeBias: "runs narrow"
   },
   "fallback-3": {
     productId: "fallback-3",
-    title: "Patagonia Torrentshell 3L Jacket",
-    brand: "Patagonia",
+    title: "Levi's 501 Original Fit Jeans",
+    brand: "Levi's",
     category: "clothing",
-    price: 60,
-    returnRate: 0.06,
+    price: 89,
+    returnRate: 0.08,
     topReason: "true to size",
     sizeBias: "true to size"
   }
@@ -43,20 +43,20 @@ export const PRODUCTS = {
 export const COHORT = {
   "fallback-2": {
     keptSize: {
-      "6": 30,
-      "6.5": 40,
-      "7": 45,
-      "7.5": 85,
-      "8": 95,
-      "8.5": 90
+      "8.5": 30,
+      "9": 50,
+      "9.5": 60,
+      "10": 55,
+      "10.5": 92,
+      "11": 88
     }
   },
   "fallback-3": {
     keptSize: {
-      "S": 80,
-      "M": 95,
-      "L": 90,
-      "XL": 85
+      "30W": 75,
+      "32W": 95,
+      "34W": 90,
+      "36W": 80
     }
   }
 };

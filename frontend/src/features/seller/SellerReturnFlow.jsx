@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Camera, ClipboardCheck, Sparkles, UploadCloud, AlertCircle, AlertTriangle, Leaf, HelpCircle, Activity } from "lucide-react";
+import { Camera, ClipboardCheck, Sparkles, UploadCloud, AlertCircle, AlertTriangle, Leaf, HelpCircle, Activity, RefreshCw } from "lucide-react";
 import { getRequirements, requestUpload, uploadFileToS3, gradeItem } from "../../services/api";
 import Stepper from "../../components/Stepper";
 
@@ -53,10 +53,10 @@ export default function SellerReturnFlow({ role }) {
   });
 
   const categoriesList = [
-    { id: "electronics", label: "Electronics", desc: "Phones, Laptops, Tablets" },
-    { id: "footwear", label: "Footwear", desc: "Sneakers, Boots, Shoes" },
-    { id: "clothing", label: "Clothing", desc: "Shirts, Pants, Jackets" },
-    { id: "appliance", label: "Appliance", desc: "Blenders, Microwaves" },
+    { id: "electronics", label: "Electronics", desc: "Headphones, Speakers, Tablets" },
+    { id: "footwear", label: "Footwear", desc: "Running Shoes, Sneakers" },
+    { id: "clothing", label: "Clothing", desc: "Jeans, Jackets, Shirts" },
+    { id: "appliance", label: "Appliance", desc: "Vacuums, Blenders" },
     { id: "drone", label: "Drone (AI-Dynamic)", desc: "Quadcoptors & Accessories" },
     { id: "custom", label: "Other / Custom", desc: "Type custom product type" }
   ];

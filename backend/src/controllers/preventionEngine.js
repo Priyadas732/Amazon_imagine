@@ -9,8 +9,8 @@ const FALLBACK_ITEMS = {
   "fallback-1": {
     productId: "fallback-1",
     category: "electronics",
-    title: "Samsung Galaxy S22 Ultra (128GB)",
-    globalReturnRate: 0.12,
+    title: "Sony WH-1000XM5 Wireless Headphones",
+    globalReturnRate: 0.10,
     preventionRules: {
       historyKey: "compatibility",
       cohortPivot: "device_handshake",
@@ -21,8 +21,8 @@ const FALLBACK_ITEMS = {
   "fallback-2": {
     productId: "fallback-2",
     category: "footwear",
-    title: "Nike Air Zoom Pegasus 39",
-    globalReturnRate: 0.34,
+    title: "Adidas Ultraboost 22",
+    globalReturnRate: 0.28,
     preventionRules: {
       historyKey: "size",
       cohortPivot: "fit_feedback",
@@ -33,8 +33,8 @@ const FALLBACK_ITEMS = {
   "fallback-3": {
     productId: "fallback-3",
     category: "clothing",
-    title: "Patagonia Torrentshell 3L Jacket",
-    globalReturnRate: 0.22,
+    title: "Levi's 501 Original Fit Jeans",
+    globalReturnRate: 0.18,
     preventionRules: {
       historyKey: "size",
       cohortPivot: "fit_feedback",
@@ -45,8 +45,8 @@ const FALLBACK_ITEMS = {
   "fallback-4": {
     productId: "fallback-4",
     category: "appliance",
-    title: "Ninja Professional Blender 1000W",
-    globalReturnRate: 0.15,
+    title: "Dyson V12 Detect Slim Cordless Vacuum",
+    globalReturnRate: 0.12,
     preventionRules: {
       historyKey: "clearance",
       cohortPivot: "spatial_fit",
@@ -130,13 +130,13 @@ export async function checkPurchaseRisk(req, res, next) {
 
     // Verify if size or status has already been optimized/corrected
     const sizeVal = String(currentSpecs?.size || "").trim();
-    const isFootwearSize7_5 = product.category === "footwear" && sizeVal === "7.5";
-    const isClothingSizeM = product.category === "clothing" && sizeVal === "M";
+    const isFootwearSize10_5 = product.category === "footwear" && sizeVal === "10.5";
+    const isClothingSizeM = product.category === "clothing" && sizeVal === "32W";
     const isApplianceCleared = (product.category === "appliance" || product.category === "furniture") && currentSpecs?.cleared === "true";
     const isElectronicsUnlocked = product.category === "electronics" && currentSpecs?.carrier === "Unlocked";
     const isScanned = currentSpecs?.scanned === true || currentSpecs?.scanned === "true";
 
-    const isSizeOptimized = isFootwearSize7_5 || isClothingSizeM || isApplianceCleared || isElectronicsUnlocked || isScanned;
+    const isSizeOptimized = isFootwearSize10_5 || isClothingSizeM || isApplianceCleared || isElectronicsUnlocked || isScanned;
 
     let responseText = "";
     let useHeuristic = false;
@@ -205,26 +205,26 @@ export async function checkPurchaseRisk(req, res, next) {
           showAlert = true;
           strategy = "CAMERA_VERIFICATION";
           headline = "⚠️ AI Placement & Clearance Warning";
-          body = "This professional blender has a tall profile (45cm). Customers in your cohort frequently return it because it doesn't clear kitchen cabinets.";
+          body = "This cordless vacuum has a tall docking station (110cm). Customers in your cohort frequently return it because it doesn't fit in storage closets.";
           actionButtonText = "Measure Room Clearance (Door Ref)";
           suggestedAlternativeSpecs = { cleared: "true" };
           checksBreakdown = {
-            history: "She returned 1 appliance last year. Reason: 'exceeded counter height'",
-            pattern: "Blender has 15% return rate. Top reason: cabinet clearance",
-            cohort: "Buyers with similar layouts chose smaller profiles"
+            history: "She returned 1 appliance last year. Reason: 'exceeded storage space'",
+            pattern: "Vacuum has 12% return rate. Top reason: docking station height",
+            cohort: "Buyers with similar layouts chose compact stick models"
           };
         } else if (product.category === "electronics") {
           riskPercent = 45;
           showAlert = true;
           strategy = "SMART_SWAP";
-          headline = "⚠️ Carrier Compatibility Warning";
-          body = "This Galaxy S22 is locked to T-Mobile. You purchased and kept Verizon compatible items recently. Cohorts recommend swapping to the Unlocked model.";
-          actionButtonText = "Swap to Unlocked Version (+$20)";
+          headline = "⚠️ Codec Compatibility Warning";
+          body = "These Sony headphones use LDAC codec by default. Your phone supports aptX but not LDAC. Cohorts recommend the aptX-optimized firmware version.";
+          actionButtonText = "Swap to Universal Codec Version";
           suggestedAlternativeSpecs = { carrier: "Unlocked" };
           checksBreakdown = {
-            history: "You returned 1 network-locked phone last year.",
-            pattern: "This carrier-locked ASIN has a 12% return rate.",
-            cohort: "Buyers with your network history bought the Unlocked model."
+            history: "You returned 1 Bluetooth audio device last year.",
+            pattern: "This SKU has a 10% return rate due to codec mismatch.",
+            cohort: "Buyers with your phone model preferred the universal version."
           };
         }
 

@@ -26,87 +26,88 @@ const FALLBACK_ITEMS = [
     itemId: "fallback-1",
     category: "electronics",
     photos: [
-      "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500",
+      "https://m.media-amazon.com/images/I/51aXvjzcukL._AC_SL1500_.jpg",
     ],
     provided: {
-      model: "Samsung Galaxy S22 Ultra (128GB)",
-      originalPrice: 1199,
-      price: 649,
-      distance: 3.2,
+      model: "Sony WH-1000XM5 Wireless Headphones",
+      originalPrice: 399,
+      price: 249,
+      distance: 2.5,
     },
     grade: {
       grade: "Very Good",
       defects: [
-        "Micro scratches on rear glass back panel",
-        "Light wear on USB-C port edge",
+        "Minor scuff on left ear cup",
+        "Faint crease on headband padding",
       ],
       completeness: "complete",
       authenticityConcern: false,
       confidence: 0.94,
-      notes: "Device is fully functional and performs perfectly.",
+      notes: "ANC fully functional. All accessories present including carry case.",
     },
   },
   {
     itemId: "fallback-2",
     category: "footwear",
-    photos: ["https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500"],
+    photos: ["https://m.media-amazon.com/images/I/71rRgqRxqOL._AC_SL1500_.jpg"],
     provided: {
-      model: "Nike Air Zoom Pegasus 39 (Size 10)",
-      originalPrice: 130,
-      price: 65,
-      distance: 1.5,
+      model: "Adidas Ultraboost 22 (Size 10)",
+      originalPrice: 190,
+      price: 95,
+      distance: 3.8,
     },
     grade: {
       grade: "Good",
-      defects: ["Creased midsoles", "Slight dirt on outsole treads"],
+      defects: ["Light outsole wear on heel", "Minor creasing on Primeknit upper"],
       completeness: "complete",
       authenticityConcern: false,
-      confidence: 0.96,
-      notes: "Original box missing, but shoes are in great running condition.",
+      confidence: 0.93,
+      notes: "Boost midsole intact, no sole separation. Original box included.",
     },
   },
   {
     itemId: "fallback-3",
     category: "clothing",
-    photos: ["https://images.unsplash.com/photo-1551028719-00167b16eac5?w=500"],
+    photos: ["https://m.media-amazon.com/images/I/81JFxMv1VNL._AC_SL1500_.jpg"],
     provided: {
-      model: "Patagonia Torrentshell 3L Jacket (Size L)",
-      originalPrice: 179,
-      price: 99,
-      distance: 6.8,
+      model: "Levi's 501 Original Fit Jeans (32W)",
+      originalPrice: 89,
+      price: 59,
+      distance: 1.2,
     },
     grade: {
       grade: "Like New",
-      defects: ["Original cardboard tag detached"],
+      defects: ["Price tag removed"],
       completeness: "complete",
       authenticityConcern: false,
-      confidence: 0.98,
+      confidence: 0.97,
       notes:
-        "Fabric shows zero signs of wear or wash fading. Zipper pulls intact.",
+        "No fading, no wash wear. Rivets and stitching fully intact.",
     },
   },
   {
     itemId: "fallback-4",
     category: "appliance",
     photos: [
-      "https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?w=500",
+      "https://m.media-amazon.com/images/I/61UMjfMKXjL._AC_SL1500_.jpg",
     ],
     provided: {
-      model: "Ninja Professional Blender 1000W",
-      originalPrice: 99,
-      price: 49,
-      distance: 4.0,
+      model: "Dyson V12 Detect Slim Cordless Vacuum",
+      originalPrice: 649,
+      price: 299,
+      distance: 5.1,
     },
     grade: {
       grade: "Acceptable",
       defects: [
-        "Scratches on plastic pitcher exterior",
-        "Lid fits tightly but shows scuffing",
+        "Scratches on main body tube",
+        "Dust bin latch slightly loose",
+        "One attachment nozzle missing",
       ],
-      completeness: "complete",
+      completeness: "missing parts or structural damage",
       authenticityConcern: false,
-      confidence: 0.92,
-      notes: "Motor base tested and runs fully at high speeds.",
+      confidence: 0.91,
+      notes: "Motor and suction fully functional. Battery holds charge. Missing crevice tool.",
     },
   },
 ];
@@ -172,7 +173,7 @@ export default function ItemDetail({ role }) {
     finalItem.provided?.model || finalItem.category || "Returned Item";
   const photo =
     finalItem.photos?.[0] ||
-    "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=500";
+    "https://m.media-amazon.com/images/I/51aXvjzcukL._AC_SL1500_.jpg";
   const gradeVal = finalItem.grade?.grade || "Good";
   const confidence = Math.round((finalItem.grade?.confidence || 0.95) * 100);
   const completeness = finalItem.grade?.completeness || "complete";
@@ -247,9 +248,9 @@ export default function ItemDetail({ role }) {
     setSizeScanned(false);
 
     if (category === "clothing") {
-      setSizeSelected("L");
+      setSizeSelected("34W");
     } else if (category === "footwear") {
-      setSizeSelected("7");
+      setSizeSelected("10");
     } else if (category === "electronics") {
       setCarrierSelected("T-Mobile");
     } else {
@@ -326,6 +327,17 @@ export default function ItemDetail({ role }) {
   const handleBuy = () => {
     if (!isChecked) return;
     setPurchaseSuccess(true);
+    // Add +50 credits to logged_in_user profile
+    const userStr = localStorage.getItem("logged_in_user");
+    if (userStr) {
+      try {
+        const userObj = JSON.parse(userStr);
+        userObj.credits = (userObj.credits || 450) + 50;
+        localStorage.setItem("logged_in_user", JSON.stringify(userObj));
+      } catch (e) {
+        console.error(e);
+      }
+    }
   };
 
   const riskPct = returnRiskData?.riskPct || (sizeScanned ? 8 : 42);
@@ -380,7 +392,7 @@ export default function ItemDetail({ role }) {
               alt={model}
               className="max-h-full max-w-full object-contain mix-blend-multiply"
               onError={(e) => {
-                e.target.src = "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=500";
+                e.target.src = "https://m.media-amazon.com/images/I/51aXvjzcukL._AC_SL1500_.jpg";
               }}
             />
             <span className="absolute top-4 left-4 bg-emerald-50 text-emerald-800 border-[0.5px] border-emerald-200 px-2.5 py-0.5 rounded-md text-[10px] font-bold">
@@ -500,13 +512,13 @@ export default function ItemDetail({ role }) {
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {category === "footwear"
-                    ? ["6", "6.5", "7", "7.5", "8", "8.5"].map((size) => (
+                    ? ["9", "9.5", "10", "10.5", "11", "11.5"].map((size) => (
                         <button
                           key={size}
                           type="button"
                           onClick={() => {
                             setSizeSelected(size);
-                            setSizeScanned(size === "7.5");
+                            setSizeScanned(size === "10.5");
                           }}
                           className={`px-2 py-1 text-[10px] border rounded-md font-bold transition-all cursor-pointer ${
                             sizeSelected === size
@@ -517,13 +529,13 @@ export default function ItemDetail({ role }) {
                           {size}
                         </button>
                       ))
-                    : ["S", "M", "L", "XL"].map((size) => (
+                    : ["30W", "32W", "34W", "36W"].map((size) => (
                         <button
                           key={size}
                           type="button"
                           onClick={() => {
                             setSizeSelected(size);
-                            setSizeScanned(size === "M");
+                            setSizeScanned(size === "32W");
                           }}
                           className={`px-3 py-1 text-[10px] border rounded-md font-bold transition-all cursor-pointer ${
                             sizeSelected === size
@@ -611,21 +623,21 @@ export default function ItemDetail({ role }) {
             <div className="space-y-2">
               <div className="flex items-center justify-between p-2.5 bg-surface-container-low border-[0.5px] border-outline-variant rounded-lg text-xs font-semibold">
                 <div>
-                  <p className="text-ink-black">Nike Pegasus 40</p>
-                  <p className="text-[10px] text-outline">Size 10 • Kept</p>
+                  <p className="text-ink-black">Adidas Ultraboost 21</p>
+                  <p className="text-[10px] text-outline">Size 10.5 • Kept</p>
                 </div>
                 <span className="text-green-700 material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
               </div>
               <div className="flex items-center justify-between p-2.5 bg-surface-container-low border-l-4 border-l-red-600 border-[0.5px] border-outline-variant rounded-lg text-xs font-semibold">
                 <div>
-                  <p className="text-ink-black">Adidas Ultraboost</p>
-                  <p className="text-[10px] text-outline">Size 10 • Returned (Too Small)</p>
+                  <p className="text-ink-black">Adidas NMD R1</p>
+                  <p className="text-[10px] text-outline">Size 10 • Returned (Too Tight)</p>
                 </div>
                 <span className="text-red-600 material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>cancel</span>
               </div>
               <div className="flex items-center justify-between p-2.5 bg-surface-container-low border-[0.5px] border-outline-variant rounded-lg text-xs font-semibold">
                 <div>
-                  <p className="text-ink-black">New Balance 1080</p>
+                  <p className="text-ink-black">New Balance Fresh Foam</p>
                   <p className="text-[10px] text-outline">Size 10.5 • Kept</p>
                 </div>
                 <span className="text-green-700 material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
@@ -1094,6 +1106,46 @@ export default function ItemDetail({ role }) {
               >
                 Cancel Scan
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Purchase Success Modal */}
+      {purchaseSuccess && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 select-none animate-in fade-in duration-200">
+          <div className="bg-white border-[0.5px] border-outline-variant rounded-2xl max-w-md w-full p-8 text-center space-y-6 shadow-2xl animate-in zoom-in-95 duration-200 text-black">
+            <div className="w-16 h-16 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto border border-green-200">
+              <Check className="w-8 h-8 text-green-700" />
+            </div>
+
+            <div className="space-y-2">
+              <h2 className="font-display font-black text-xl text-ink-black uppercase tracking-wide">
+                Purchase Confirmed!
+              </h2>
+              <p className="text-xs text-outline font-semibold leading-relaxed">
+                Thank you for choosing to purchase a certified used item, helping prevent waste and reduce carbon emissions.
+              </p>
+            </div>
+
+            <div className="bg-emerald-50 border-[0.5px] border-emerald-200 p-4 rounded-xl text-xs font-bold text-green-800 flex items-center justify-center gap-2">
+              <Leaf className="w-4 h-4 fill-current text-green-700" />
+              Eco Reward: Earned +50 Green Credits!
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setPurchaseSuccess(false)}
+                className="flex-1 py-3 bg-white hover:bg-surface-container text-outline hover:text-ink-black font-extrabold rounded-xl text-xs uppercase tracking-wider border border-outline-variant cursor-pointer transition-colors"
+              >
+                Close
+              </button>
+              <Link
+                to="/credits"
+                className="flex-grow flex-1 py-3 bg-secondary-container hover:bg-[#e68a00] text-ink-black font-extrabold rounded-xl text-xs uppercase tracking-wider border border-[#ffd814] cursor-pointer transition-colors text-center flex items-center justify-center"
+              >
+                View Credits Hub
+              </Link>
             </div>
           </div>
         </div>

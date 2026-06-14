@@ -12,18 +12,18 @@ export { REGIONAL_DEMAND_DB, NGO_WANTLIST } from "./groqVision.service.js";
 
 // Signal 2: live buyer demand — how many people searched this model recently
 const DEMAND = {
-  "iphone 14": 2400,
-  "iphone 13": 1500,
-  "galaxy s22": 900,
+  "sony wh-1000xm5": 2200,
+  "adidas ultraboost 22": 1400,
+  "levis 501 jeans": 900,
+  "dyson v12 vacuum": 750,
   "default": 200
 };
 
 // Signal 3: partner / refurbisher want-lists — who wants this, and what they'll pay
-// (a partner may want LOW-grade items others can't resell — that's the whole point)
 const PARTNERS = [
-  { name: "Cashify", wants: ["iphone", "galaxy", "pixel"], grades: ["Damaged", "Acceptable", "Good"], payFactor: 0.36 },
-  { name: "ReBoxed", wants: ["iphone", "macbook"], grades: ["Good", "Very Good"], payFactor: 0.55 },
-  { name: "Goonj NGO", wants: ["clothing", "jacket"], grades: ["Good", "Acceptable"], payFactor: 0 } // donation
+  { name: "Cashify", wants: ["sony", "dyson", "headphones", "vacuum", "electronics"], grades: ["Damaged", "Acceptable", "Good"], payFactor: 0.36 },
+  { name: "ReBoxed", wants: ["sony", "dyson", "headphones", "vacuum", "appliance"], grades: ["Good", "Very Good"], payFactor: 0.55 },
+  { name: "Goonj NGO", wants: ["clothing", "jeans", "footwear", "shoes", "adidas"], grades: ["Good", "Acceptable", "Like New"], payFactor: 0 }
 ];
 
 // Signal 4: channel base price factors (fraction of original price each channel yields)
@@ -55,31 +55,31 @@ export const channelFactors = CHANNEL_FACTORS;
 // ==========================================
 
 export const DEMAND_DB = [
-  { model: "iphone 14", region: "Bangalore", buyersSearching: 2400 },
-  { model: "iphone 13", region: "Bangalore", buyersSearching: 1500 },
-  { model: "galaxy s22", region: "Bangalore", buyersSearching: 900 },
-  { model: "clothing", region: "Bangalore", buyersSearching: 800 },
-  { model: "jacket", region: "Bangalore", buyersSearching: 450 },
-  { model: "iphone 14", region: "Mumbai", buyersSearching: 1800 },
-  { model: "iphone 13", region: "Mumbai", buyersSearching: 1200 },
-  { model: "galaxy s22", region: "Mumbai", buyersSearching: 750 },
-  { model: "clothing", region: "Mumbai", buyersSearching: 600 },
-  { model: "jacket", region: "Mumbai", buyersSearching: 350 },
+  { model: "sony wh-1000xm5", region: "Bangalore", buyersSearching: 2200 },
+  { model: "dyson v12 vacuum", region: "Bangalore", buyersSearching: 750 },
+  { model: "adidas ultraboost", region: "Bangalore", buyersSearching: 1400 },
+  { model: "levis 501", region: "Bangalore", buyersSearching: 900 },
+  { model: "sony wh-1000xm5", region: "Mumbai", buyersSearching: 1800 },
+  { model: "dyson v12 vacuum", region: "Mumbai", buyersSearching: 600 },
+  { model: "adidas ultraboost", region: "Mumbai", buyersSearching: 1100 },
+  { model: "levis 501", region: "Mumbai", buyersSearching: 700 },
   { model: "default", region: "Bangalore", buyersSearching: 200 },
   { model: "default", region: "Mumbai", buyersSearching: 150 }
 ];
 
 export const REFURBISHER_DB = [
-  { name: "Cashify", region: "Bangalore", wants: ["iphone", "galaxy", "pixel", "phone"], acceptsGrades: ["Damaged", "Acceptable", "Good", "Very Good", "Like New"], payFactor: 0.36, distanceKm: 4, categories: ["electronics"] },
-  { name: "ReBoxed", region: "Bangalore", wants: ["iphone", "macbook", "phone"], acceptsGrades: ["Good", "Very Good", "Like New", "New"], payFactor: 0.55, distanceKm: 8, categories: ["electronics"] },
-  { name: "Cashify", region: "Mumbai", wants: ["iphone", "galaxy", "pixel", "phone"], acceptsGrades: ["Damaged", "Acceptable", "Good", "Very Good", "Like New"], payFactor: 0.38, distanceKm: 6, categories: ["electronics"] },
-  { name: "ReBoxed", region: "Mumbai", wants: ["iphone", "macbook", "phone"], acceptsGrades: ["Good", "Very Good", "Like New", "New"], payFactor: 0.54, distanceKm: 12, categories: ["electronics"] }
+  { name: "Cashify", region: "Bangalore", wants: ["sony", "headphones", "dyson", "vacuum", "electronics"], acceptsGrades: ["Damaged", "Acceptable", "Good", "Very Good", "Like New"], payFactor: 0.36, distanceKm: 4, categories: ["electronics", "appliance"] },
+  { name: "ReBoxed", region: "Bangalore", wants: ["sony", "dyson", "headphones", "vacuum", "appliance"], acceptsGrades: ["Good", "Very Good", "Like New", "New"], payFactor: 0.55, distanceKm: 8, categories: ["electronics", "appliance"] },
+  { name: "Cashify", region: "Mumbai", wants: ["sony", "headphones", "dyson", "vacuum", "electronics"], acceptsGrades: ["Damaged", "Acceptable", "Good", "Very Good", "Like New"], payFactor: 0.38, distanceKm: 6, categories: ["electronics", "appliance"] },
+  { name: "ReBoxed", region: "Mumbai", wants: ["sony", "dyson", "headphones", "vacuum", "appliance"], acceptsGrades: ["Good", "Very Good", "Like New", "New"], payFactor: 0.54, distanceKm: 12, categories: ["electronics", "appliance"] }
 ];
 
 export const NGO_DB = [
-  { name: "Goonj", region: "Bangalore", wants: ["clothing", "jacket", "footwear"], acceptsGrades: ["Good", "Acceptable", "Very Good", "Like New", "New"], categories: ["clothing", "footwear"] },
-  { name: "Goonj", region: "Mumbai", wants: ["clothing", "jacket", "footwear"], acceptsGrades: ["Good", "Acceptable", "Very Good", "Like New", "New"], categories: ["clothing", "footwear"] },
-  { name: "ShareAtDoorStep", region: "Bangalore", wants: ["clothing", "books", "toys"], acceptsGrades: ["Good", "Acceptable", "Very Good"], categories: ["clothing", "books", "toys"] }
+  { name: "Goonj", region: "Bangalore", wants: ["clothing", "jeans", "levis", "footwear", "adidas", "shoes"], acceptsGrades: ["Good", "Acceptable", "Very Good", "Like New", "New"], categories: ["clothing", "footwear"] },
+  { name: "Goonj", region: "Mumbai", wants: ["clothing", "jeans", "levis", "footwear", "adidas", "shoes"], acceptsGrades: ["Good", "Acceptable", "Very Good", "Like New", "New"], categories: ["clothing", "footwear"] },
+  { name: "ShareAtDoorStep", region: "Bangalore", wants: ["clothing", "footwear", "adidas", "jeans", "shoes"], acceptsGrades: ["Good", "Acceptable", "Very Good"], categories: ["clothing", "footwear"] },
+  { name: "Pratham Books", region: "Bangalore", wants: ["books", "textbook", "ncert", "notebook"], acceptsGrades: ["Good", "Acceptable", "Very Good", "Like New"], categories: ["books"] },
+  { name: "Smile Foundation", region: "Bangalore", wants: ["toys", "books", "clothing"], acceptsGrades: ["Good", "Very Good", "Like New"], categories: ["toys", "books", "clothing"] }
 ];
 
 export function getNearbyDemand(model, region) {

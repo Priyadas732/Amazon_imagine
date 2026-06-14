@@ -110,6 +110,16 @@ export default function TopBar({ currentRole, onRoleChange }) {
       <div className="bg-deep-navy text-white px-margin-desktop py-2 text-xs font-semibold flex items-center justify-between border-t border-outline-variant">
         <div className="flex items-center gap-6">
           <span className="cursor-pointer hover:text-accent-yellow transition-colors">All</span>
+          {localStorage.getItem("is_logged_in") === "true" && (
+            <NavLink
+              to="/dashboard"
+              className={({ isActive }) =>
+                `hover:text-accent-yellow transition-colors ${isActive ? "text-accent-yellow font-bold" : "text-surface-variant"}`
+              }
+            >
+              Dashboard
+            </NavLink>
+          )}
           <NavLink
             to="/seller/return"
             className={({ isActive }) =>
@@ -133,6 +143,14 @@ export default function TopBar({ currentRole, onRoleChange }) {
             }
           >
             Green Credits Hub
+          </NavLink>
+          <NavLink
+            to="/partners"
+            className={({ isActive }) =>
+              `hover:text-accent-yellow transition-colors ${isActive ? "text-accent-yellow font-bold" : "text-surface-variant"}`
+            }
+          >
+            Ecosystem Partners
           </NavLink>
           <span className="text-green-400 flex items-center gap-1 cursor-pointer hover:text-green-300 transition-colors">
             <Leaf className="w-3.5 h-3.5 fill-current" /> Climate Pledge Friendly

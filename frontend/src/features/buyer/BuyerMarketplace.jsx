@@ -11,82 +11,82 @@ const PRESEEDED_IDS = [
   "9abb5d94-3f73-443c-bf49-e039744ed06a"
 ];
 
-// Fallback mock items in case DynamoDB is empty or pre-seeded items are missing
+// Fallback mock items — curated for demo coverage (all grades + all categories)
 const FALLBACK_ITEMS = [
   {
     itemId: "fallback-1",
     category: "electronics",
-    photos: ["https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300"],
+    photos: ["https://m.media-amazon.com/images/I/51aXvjzcukL._AC_SL1500_.jpg"],
     provided: {
-      model: "Samsung Galaxy S22 Ultra (128GB)",
-      originalPrice: 1199,
-      price: 649,
-      distance: 3.2
+      model: "Sony WH-1000XM5 Wireless Headphones",
+      originalPrice: 399,
+      price: 249,
+      distance: 2.5
     },
     grade: {
       grade: "Very Good",
-      defects: ["Micro scratches on rear glass back panel", "Light wear on USB-C port edge"],
+      defects: ["Minor scuff on left ear cup", "Faint crease on headband padding"],
       completeness: "complete",
       authenticityConcern: false,
       confidence: 0.94,
-      notes: "Device is fully functional and performs perfectly."
+      notes: "ANC fully functional. All accessories present including carry case."
     }
   },
   {
     itemId: "fallback-2",
     category: "footwear",
-    photos: ["https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300"],
+    photos: ["https://m.media-amazon.com/images/I/71rRgqRxqOL._AC_SL1500_.jpg"],
     provided: {
-      model: "Nike Air Zoom Pegasus 39 (Size 10)",
-      originalPrice: 130,
-      price: 65,
-      distance: 1.5
+      model: "Adidas Ultraboost 22 (Size 10)",
+      originalPrice: 190,
+      price: 95,
+      distance: 3.8
     },
     grade: {
       grade: "Good",
-      defects: ["Creased midsoles", "Slight dirt on outsole treads"],
+      defects: ["Light outsole wear on heel", "Minor creasing on Primeknit upper"],
       completeness: "complete",
       authenticityConcern: false,
-      confidence: 0.96,
-      notes: "Original box missing, but shoes are in great running condition."
+      confidence: 0.93,
+      notes: "Boost midsole intact, no sole separation. Original box included."
     }
   },
   {
     itemId: "fallback-3",
     category: "clothing",
-    photos: ["https://images.unsplash.com/photo-1551028719-00167b16eac5?w=300"],
+    photos: ["https://m.media-amazon.com/images/I/81JFxMv1VNL._AC_SL1500_.jpg"],
     provided: {
-      model: "Patagonia Torrentshell 3L Jacket (Size L)",
-      originalPrice: 179,
-      price: 99,
-      distance: 6.8
+      model: "Levi's 501 Original Fit Jeans (32W)",
+      originalPrice: 89,
+      price: 59,
+      distance: 1.2
     },
     grade: {
       grade: "Like New",
-      defects: ["Original cardboard tag detached"],
+      defects: ["Price tag removed"],
       completeness: "complete",
       authenticityConcern: false,
-      confidence: 0.98,
-      notes: "Fabric shows zero signs of wear or wash fading. Zipper pulls intact."
+      confidence: 0.97,
+      notes: "No fading, no wash wear. Rivets and stitching fully intact."
     }
   },
   {
     itemId: "fallback-4",
     category: "appliance",
-    photos: ["https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?w=300"],
+    photos: ["https://m.media-amazon.com/images/I/61UMjfMKXjL._AC_SL1500_.jpg"],
     provided: {
-      model: "Ninja Professional Blender 1000W",
-      originalPrice: 99,
-      price: 49,
-      distance: 4.0
+      model: "Dyson V12 Detect Slim Cordless Vacuum",
+      originalPrice: 649,
+      price: 299,
+      distance: 5.1
     },
     grade: {
       grade: "Acceptable",
-      defects: ["Scratches on plastic pitcher exterior", "Lid fits tightly but shows scuffing"],
-      completeness: "complete",
+      defects: ["Scratches on main body tube", "Dust bin latch slightly loose", "One attachment nozzle missing"],
+      completeness: "missing parts or structural damage",
       authenticityConcern: false,
-      confidence: 0.92,
-      notes: "Motor base tested and runs fully at high speeds."
+      confidence: 0.91,
+      notes: "Motor and suction fully functional. Battery holds charge. Missing crevice tool."
     }
   }
 ];
