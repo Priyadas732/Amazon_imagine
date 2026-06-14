@@ -393,22 +393,38 @@ export default function ItemDetail({ role }) {
           )}
 
           {/* AI Verified Section */}
-          <div className="bg-gray-50 border border-gray-200 rounded-md p-4 space-y-3">
-            <div className="flex items-center gap-1 text-sm font-bold text-amazon-teal">
-              <ShieldCheck className="w-5 h-5 fill-cyan-50 text-cyan-600" />
-              <span>Amazon Certified · AI-Verified Returns</span>
+          {finalItem.grade?.gradedBy === "fallback" ? (
+            <div className="bg-amber-50 border border-amber-200 rounded-md p-4 space-y-2">
+              <div className="flex items-center gap-1.5 text-sm font-bold text-amber-700">
+                <AlertTriangle className="w-5 h-5 text-amber-600" />
+                <span>Certified Return · Local Fallback Inspection</span>
+              </div>
+              <p className="text-xs text-amber-800 leading-relaxed font-medium">
+                Gemini Vision was temporarily offline when this item was listed. Local rule-based checks were run:
+                <br />
+                <span className="font-mono text-[10px] text-rose-700 block mt-1 leading-snug">
+                  {notes}
+                </span>
+              </p>
             </div>
-            
-            <div className="flex items-center gap-2">
-              <GradeBadge grade={gradeVal} size="md" />
-              <span className="text-xs text-gray-500 font-medium">({confidence}% AI vision confidence)</span>
-            </div>
+          ) : (
+            <div className="bg-gray-50 border border-gray-200 rounded-md p-4 space-y-3">
+              <div className="flex items-center gap-1 text-sm font-bold text-amazon-teal">
+                <ShieldCheck className="w-5 h-5 fill-cyan-50 text-cyan-600" />
+                <span>Amazon Certified · AI-Verified Returns</span>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <GradeBadge grade={gradeVal} size="md" />
+                <span className="text-xs text-gray-500 font-medium">({confidence}% AI vision confidence)</span>
+              </div>
 
-            <p className="text-xs text-gray-700 leading-relaxed font-medium">
-              <span className="font-bold text-gray-900">Summary: </span>
-              {notes}
-            </p>
-          </div>
+              <p className="text-xs text-gray-700 leading-relaxed font-medium">
+                <span className="font-bold text-gray-900">Summary: </span>
+                {notes}
+              </p>
+            </div>
+          )}
 
           {/* Price Box */}
           <div className="border-b border-gray-200 pb-4">

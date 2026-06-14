@@ -150,6 +150,70 @@ export default function GradingResult({ role }) {
 
   const finalCredits = creditEarned + (item.extraCredits || 0) + extraCredits;
 
+  if (item.grade?.gradedBy === "fallback") {
+    return (
+      <div className="max-w-4xl mx-auto p-4 font-sans">
+        <Stepper steps={["Category Selection", "Product Verification", "AI Assessment"]} currentStep={2} />
+
+        {/* Title Header bar */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+          <Link
+            to="/seller/return"
+            className="text-xs font-bold text-amazon-teal hover:underline flex items-center gap-1 py-1"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> Grade another item
+          </Link>
+        </div>
+
+        <div className="bg-amber-50 border border-amber-300 rounded-md p-6 mb-6 text-center shadow-xs">
+          <AlertTriangle className="w-12 h-12 text-amber-600 mx-auto mb-4" />
+          <h1 className="text-xl font-bold text-amber-900">AI Assessment Temporarily Unavailable</h1>
+          <p className="text-sm text-amber-800 mt-2 max-w-xl mx-auto">
+            Gemini vision grading failed to process this return. The AI-certified result has been blocked to prevent incorrect assessment.
+          </p>
+
+          <div className="mt-4 p-3 bg-white border border-amber-200 rounded-md text-xs text-left max-w-xl mx-auto">
+            <span className="font-bold text-gray-700 block mb-1">Technical Details:</span>
+            <code className="text-rose-600 font-mono break-all leading-normal">
+              {item.grade?.notes || "Error: API response was offline."}
+            </code>
+          </div>
+
+          <div className="mt-6 flex flex-col sm:flex-row justify-center gap-3">
+            <Link
+              to="/seller/return"
+              className="bg-amazon-orange hover:bg-amazon-orange-hover text-white px-4 py-2 rounded-md text-xs font-bold transition-all shadow-xs"
+            >
+              Try Grading Again
+            </Link>
+            <button
+              onClick={() => refetch()}
+              className="border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-md text-xs font-bold transition-all shadow-xs cursor-pointer"
+            >
+              Retry Connection
+            </button>
+          </div>
+        </div>
+
+        {/* Let them view uploaded photos for manual verification */}
+        {photos.length > 0 && (
+          <div className="bg-white border border-[#D5D9D9] rounded-md p-6">
+            <h2 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">
+              Uploaded Returns Documentation (For Manual Inspection)
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {photos.map((url, idx) => (
+                <div key={idx} className="border border-gray-200 rounded-md p-2 bg-gray-50 flex items-center justify-center">
+                  <img src={url} alt={`Documentation ${idx + 1}`} className="max-h-28 object-contain rounded-xs" />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto p-4 font-sans">
       <Stepper steps={["Category Selection", "Product Verification", "AI Assessment"]} currentStep={2} />

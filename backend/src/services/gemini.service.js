@@ -152,6 +152,7 @@ export async function getRequirements(productType, { title } = {}) {
     persistCache();
     return { ...parsed, source: "ai" };
   } catch (e) {
+    console.error("❌ Gemini AI requirements generation failed. Actual Error:", e);
     return { ...GENERIC, source: "generic", error: e.message };
   }
 }
@@ -177,9 +178,13 @@ export async function gradeFromBuffers({ category, images, provided = {} }) {
 
     let text = res.response.text();
     text = text.replace(/```json|```/g, "").trim();
-    return JSON.parse(text);
+    const parsed = JSON.parse(text);
+    return {
+      ...parsed,
+      gradedBy: "gemini"
+    };
   } catch (err) {
-    console.warn("⚠️ Gemini AI grading failed (possibly quota limit). Using robust fallback heuristics...", err.message);
+    console.error("❌ Gemini AI grading failed. Actual Error details:", err);
 
     // Dynamic fallback logic based on provided checklist
     const checklist = provided.checklist || [];
@@ -245,7 +250,8 @@ export async function gradeFromBuffers({ category, images, provided = {} }) {
       completeness,
       authenticityConcern: false,
       confidence,
-      notes: `Graded via local fallback heuristics (AI quota exceeded).`
+      gradedBy: "fallback",
+      notes: `Graded via local fallback heuristics (AI temporarily unavailable). Error: ${err.message}`
     };
   }
 }

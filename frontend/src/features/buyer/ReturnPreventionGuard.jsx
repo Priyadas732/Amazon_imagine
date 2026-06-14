@@ -60,7 +60,7 @@ export default function ReturnPreventionGuard({
     return null; // Silent fallback if endpoint fails
   }
 
-  const { riskPercent, showAlert, interventionStrategy, uiCopy, suggestedAlternativeSpecs, preventionRules, checksBreakdown } = engineDirective;
+  const { riskPercent, showAlert, interventionStrategy, uiCopy, suggestedAlternativeSpecs, preventionRules, checksBreakdown, gradedBy } = engineDirective;
 
   // Determine colors based on risk severity
   const isHighRisk = riskPercent >= 50;
@@ -83,6 +83,11 @@ export default function ReturnPreventionGuard({
           <span className="font-bold text-xs uppercase tracking-wider text-cyan-400">
             {isScannedOrOptimized ? "AI Size Optimization Active" : "AI Return Prevention Engine"}
           </span>
+          {gradedBy === "fallback" && (
+            <span className="text-[9px] bg-amber-500/20 text-amber-300 font-bold px-1.5 py-0.5 rounded border border-amber-500/30">
+              Local Fallback
+            </span>
+          )}
         </div>
         <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
           isScannedOrOptimized ? "bg-emerald-500/20 text-emerald-300" : "bg-red-500/20 text-red-300"

@@ -181,7 +181,7 @@ Instructions: Determine the probability of return. If the category is electronic
       });
       responseText = result.response.text();
     } catch (apiErr) {
-      console.warn("⚠️ Gemini API risk evaluation failed, using fallback engine: ", apiErr.message);
+      console.error("❌ Gemini API risk evaluation failed. Actual Error:", apiErr);
       useHeuristic = true;
     }
 
@@ -302,6 +302,7 @@ Instructions: Determine the probability of return. If the category is electronic
 
     // Append raw rules metadata so the frontend knows what scanning mode to launch
     directive.preventionRules = product.preventionRules;
+    directive.gradedBy = useHeuristic || !responseText ? "fallback" : "gemini";
 
     return res.json({
       success: true,
