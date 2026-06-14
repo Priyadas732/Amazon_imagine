@@ -4,8 +4,80 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GRADING_REQUIREMENTS } from "../utils/gradingRequirements.js";
 import { GEMINI_API_KEY } from "../../config/setting.js";
 
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
+// Simple Mutex for sequential locking
+class Mutex {
+  constructor() {
+    this.queue = Promise.resolve();
+  }
+  async acquire() {
+    let release;
+    const next = new Promise((resolve) => {
+      release = resolve;
+    });
+    const current = this.queue;
+    this.queue = next;
+    await current;
+    return release;
+  }
+}
+
+const apiMutex = new Mutex();
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const apiKeys = (GEMINI_API_KEY || "").split(",").map(k => k.trim()).filter(Boolean);
+let currentKeyIndex = 0;
+
+function getNextApiKey() {
+  if (apiKeys.length === 0) return null;
+  const key = apiKeys[currentKeyIndex];
+  currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
+  return key;
+}
+
+export async function generateContentWithRotation(promptParts, options = {}) {
+  const modelName = options.model || "gemini-2.0-flash-lite";
+  const generationConfig = options.generationConfig || {};
+
+  const release = await apiMutex.acquire();
+  try {
+    let delay = 4000;
+    const retries = Math.max(5, apiKeys.length * 2);
+
+    for (let attempt = 0; attempt < retries; attempt++) {
+      const key = getNextApiKey();
+      if (!key) {
+        throw new Error("No Gemini API keys configured in GEMINI_API_KEY.");
+      }
+
+      const client = new GoogleGenerativeAI(key);
+      const modelInstance = client.getGenerativeModel({ model: modelName });
+
+      try {
+        const result = await modelInstance.generateContent(promptParts, { generationConfig });
+        
+        // Success: enforce a hard sequential spacing of 4 seconds to protect RPM
+        console.log(`✅ API call succeeded using key prefix ${key.slice(0, 8)}... Cooling down for 4 seconds to protect free tier RPM limits.`);
+        await sleep(4000);
+        
+        return result;
+      } catch (err) {
+        const errText = String(err.message || err);
+        const isRateLimit = errText.includes("429") || errText.toLowerCase().includes("quota") || errText.toLowerCase().includes("exhausted");
+
+        if (isRateLimit && attempt < retries - 1) {
+          console.warn(`⚠️ [429/Quota] Key index ${currentKeyIndex} throttled. Swapping key and retrying in ${delay}ms...`);
+          await sleep(delay);
+          delay *= 1.5;
+        } else {
+          throw err;
+        }
+      }
+    }
+    throw new Error("All configured Gemini API keys are temporarily exhausted.");
+  } finally {
+    release();
+  }
+}
 
 // ---- dynamic requirements cache ----
 const CACHE_FILE = "./src/utils/requirementsCache.json";
@@ -143,7 +215,7 @@ export async function getRequirements(productType, { title } = {}) {
 
   // 4) AI generate
   try {
-    const result = await model.generateContent(buildRequirementsPrompt(key, title));
+    const result = await generateContentWithRotation(buildRequirementsPrompt(key, title));
     let text = result.response.text();
     text = text.replace(/```json|```/g, "").trim();
     const parsed = validateRequirements(JSON.parse(text));
@@ -171,7 +243,7 @@ export async function gradeFromBuffers({ category, images, provided = {} }) {
   }));
 
   try {
-    const res = await model.generateContent([
+    const res = await generateContentWithRotation([
       ...imageBlocks,
       buildGradingPrompt(req, provided)
     ]);

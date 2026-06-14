@@ -1,10 +1,6 @@
-// src/controllers/preventionEngine.js
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GEMINI_API_KEY } from "../../config/setting.js";
 import * as dynamoService from "../services/dynamo.service.js";
-
-// Initialize Gemini Client
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+import { generateContentWithRotation } from "../services/gemini.service.js";
 
 // Fallback items to simulate real database records in development/demo context
 const FALLBACK_ITEMS = {
@@ -149,36 +145,38 @@ export async function checkPurchaseRisk(req, res, next) {
         throw new Error("Gemini API key is not configured. Falling back to rule-based engine.");
       }
 
-      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
       const prompt = `Analyze these retail signals. Determine if there is a conflict. If return risk exceeds 50%, flag an intervention.
 Input Context: ${JSON.stringify(deepContextPayload)}
 Instructions: Determine the probability of return. If the category is electronics, check carrier locks and compatibility.`;
 
-      const result = await model.generateContent({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: "object",
-            properties: {
-              riskPercent: { type: "number", description: "Calculated risk percentage (0 to 100)" },
-              showAlert: { type: "boolean" },
-              interventionStrategy: { type: "string", enum: ["HISTORY_BANNER", "SMART_SWAP", "CAMERA_VERIFICATION", "NONE"] },
-              uiCopy: {
-                type: "object",
-                properties: {
-                  headline: { type: "string" },
-                  body: { type: "string" },
-                  actionButtonText: { type: "string" }
+      const result = await generateContentWithRotation(
+        prompt,
+        {
+          model: "gemini-2.0-flash-lite",
+          generationConfig: {
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: "object",
+              properties: {
+                riskPercent: { type: "number", description: "Calculated risk percentage (0 to 100)" },
+                showAlert: { type: "boolean" },
+                interventionStrategy: { type: "string", enum: ["HISTORY_BANNER", "SMART_SWAP", "CAMERA_VERIFICATION", "NONE"] },
+                uiCopy: {
+                  type: "object",
+                  properties: {
+                    headline: { type: "string" },
+                    body: { type: "string" },
+                    actionButtonText: { type: "string" }
+                  },
+                  required: ["headline", "body", "actionButtonText"]
                 },
-                required: ["headline", "body", "actionButtonText"]
+                suggestedAlternativeSpecs: { type: "object" }
               },
-              suggestedAlternativeSpecs: { type: "object" }
-            },
-            required: ["riskPercent", "showAlert", "interventionStrategy", "uiCopy"]
+              required: ["riskPercent", "showAlert", "interventionStrategy", "uiCopy"]
+            }
           }
         }
-      });
+      );
       responseText = result.response.text();
     } catch (apiErr) {
       console.error("❌ Gemini API risk evaluation failed. Actual Error:", apiErr);
