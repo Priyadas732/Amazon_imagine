@@ -135,18 +135,18 @@ export default function BuyerMarketplace({ role }) {
     <div className="max-w-6xl mx-auto p-4 font-sans">
       
       {/* Search Result Banner header */}
-      <div className="bg-white border border-[#D5D9D9] p-4 rounded-md shadow-xs mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-white border-[0.5px] border-outline-variant p-5 rounded-xl mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-lg font-bold text-gray-900 flex items-center gap-1.5">
-            <ShoppingBag className="w-5 h-5 text-amazon-teal" /> Certified Used Storefront
+          <h2 className="text-lg font-black text-ink-black flex items-center gap-1.5 leading-none">
+            <ShoppingBag className="w-5 h-5 text-link-blue" /> Certified Used Storefront
           </h2>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <p className="text-xs text-outline mt-1.5 font-medium">
             Real-time open-box return listings saved in Amazon DynamoDB. AI-Verified for accuracy.
           </p>
         </div>
 
         {/* Climate Pledge tag */}
-        <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 self-start sm:self-auto">
+        <div className="bg-emerald-50 border-[0.5px] border-emerald-255 text-emerald-850 px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 self-start sm:self-auto">
           <ShieldCheck className="w-4 h-4 text-emerald-600 fill-current" />
           <span>Used Purchase saves avg. 82% Carbon Emissions</span>
         </div>
@@ -154,33 +154,33 @@ export default function BuyerMarketplace({ role }) {
 
       <div className="flex flex-col lg:flex-row gap-6">
         
-        {/* Left Filters column (Amazon style) */}
-        <div className="w-full lg:w-48 flex-shrink-0 bg-white border border-[#D5D9D9] rounded-md p-4 h-fit">
-          <h3 className="text-xs font-bold text-gray-900 border-b border-gray-200 pb-2 mb-3 flex items-center gap-1">
-            <Filter className="w-3.5 h-3.5" /> Department
+        {/* Left Filters column */}
+        <div className="w-full lg:w-48 flex-shrink-0 bg-white border-[0.5px] border-outline-variant rounded-xl p-5 h-fit">
+          <h3 className="text-xs font-bold text-ink-black border-b border-surface-container pb-2.5 mb-3.5 flex items-center gap-1">
+            <Filter className="w-3.5 h-3.5 text-link-blue" /> Department
           </h3>
-          <ul className="text-xs space-y-2 text-gray-600">
-            <li className="font-bold text-gray-900 cursor-pointer hover:text-amazon-teal">Used Deals</li>
-            <li className="pl-2 cursor-pointer hover:text-amazon-teal">Electronics</li>
-            <li className="pl-2 cursor-pointer hover:text-amazon-teal">Footwear</li>
-            <li className="pl-2 cursor-pointer hover:text-amazon-teal">Clothing</li>
-            <li className="pl-2 cursor-pointer hover:text-amazon-teal">Home Appliance</li>
+          <ul className="text-xs space-y-2 text-outline font-semibold">
+            <li className="font-bold text-ink-black cursor-pointer hover:text-link-blue">Used Deals</li>
+            <li className="pl-2 cursor-pointer hover:text-link-blue">Electronics</li>
+            <li className="pl-2 cursor-pointer hover:text-link-blue">Footwear</li>
+            <li className="pl-2 cursor-pointer hover:text-link-blue">Clothing</li>
+            <li className="pl-2 cursor-pointer hover:text-link-blue">Home Appliance</li>
           </ul>
 
-          <h3 className="text-xs font-bold text-gray-900 border-b border-gray-200 pb-2 mt-5 mb-3">
+          <h3 className="text-xs font-bold text-ink-black border-b border-surface-container pb-2.5 mt-6 mb-3.5">
             AI Condition Grade
           </h3>
-          <div className="space-y-1.5 text-xs text-gray-600">
-            <label className="flex items-center gap-1.5 cursor-pointer">
-              <input type="checkbox" defaultChecked className="rounded text-amazon-teal" />
+          <div className="space-y-2.5 text-xs text-outline font-semibold">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" defaultChecked className="rounded border-outline-variant text-link-blue focus:ring-0 focus:ring-offset-0 w-4 h-4" />
               <span>New / Like New</span>
             </label>
-            <label className="flex items-center gap-1.5 cursor-pointer">
-              <input type="checkbox" defaultChecked className="rounded text-amazon-teal" />
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" defaultChecked className="rounded border-outline-variant text-link-blue focus:ring-0 focus:ring-offset-0 w-4 h-4" />
               <span>Very Good / Good</span>
             </label>
-            <label className="flex items-center gap-1.5 cursor-pointer">
-              <input type="checkbox" defaultChecked className="rounded text-amazon-teal" />
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" defaultChecked className="rounded border-outline-variant text-link-blue focus:ring-0 focus:ring-offset-0 w-4 h-4" />
               <span>Acceptable</span>
             </label>
           </div>
@@ -189,16 +189,16 @@ export default function BuyerMarketplace({ role }) {
         {/* Listings Grid */}
         <div className="flex-grow">
           {isAnyLoading && uniqueListings.length === FALLBACK_ITEMS.length ? (
-            <div className="py-12 text-center text-gray-500">
-              <RefreshCw className="animate-spin w-8 h-8 mx-auto text-amazon-teal mb-2" />
+            <div className="py-12 text-center text-outline font-medium">
+              <RefreshCw className="animate-spin w-8 h-8 mx-auto text-secondary-container mb-2" />
               Refreshing live DB records...
             </div>
           ) : (
             <div>
-              <div className="text-xs text-gray-500 font-semibold mb-3.5 border-b border-gray-200 pb-2 flex items-center justify-between">
+              <div className="text-xs text-outline font-bold mb-4 border-b border-surface-container pb-2.5 flex items-center justify-between">
                 <span>Showing 1-{uniqueListings.length} of {uniqueListings.length} Used Deals</span>
-                <span className="flex items-center gap-1 text-amazon-teal font-bold">
-                  <Sparkles className="w-3.5 h-3.5 fill-cyan-400" /> AI-Verified Condition Guarantees
+                <span className="flex items-center gap-1 text-link-blue font-black uppercase tracking-wider">
+                  <Sparkles className="w-3.5 h-3.5 fill-cyan-400 text-secondary-container" /> AI-Verified Condition Guarantees
                 </span>
               </div>
 

@@ -1,5 +1,5 @@
 // src/controllers/requirements.controller.js
-import * as geminiService from "../services/gemini.service.js";
+import { getRequirements } from "../services/groqVision.service.js";
 
 /**
  * Controller to fetch capture requirements for a product category.
@@ -11,7 +11,7 @@ export async function getCategoryRequirements(req, res, next) {
       return res.status(400).json({ error: "category query param is required" });
     }
 
-    const requirements = await geminiService.getRequirements(category);
+    const requirements = await getRequirements(category);
     res.json({
       success: true,
       requirements,

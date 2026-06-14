@@ -1,6 +1,6 @@
 // frontend/src/features/credits/GreenCredits.jsx
 import React from "react";
-import { Leaf, Gift, CheckCircle, ArrowRight, ShieldCheck, Heart } from "lucide-react";
+import { Leaf, Gift, CheckCircle, Heart } from "lucide-react";
 
 export default function GreenCredits() {
   const earningsList = [
@@ -48,24 +48,24 @@ export default function GreenCredits() {
     <div className="max-w-4xl mx-auto p-4 font-sans">
       
       {/* Page Header */}
-      <div className="bg-gradient-to-r from-emerald-800 to-teal-950 text-white p-6 rounded-lg shadow-sm mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 select-none">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-extrabold tracking-tight flex items-center gap-1.5">
-            <Leaf className="w-6 h-6 text-emerald-400 fill-current" /> Green Credits Hub
+      <div className="bg-primary-container text-white p-6 rounded-xl border-[0.5px] border-outline-variant mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 select-none shadow-none">
+        <div className="space-y-1.5">
+          <h1 className="text-2xl font-black tracking-tight flex items-center gap-1.5 text-accent-yellow">
+            <Leaf className="w-6 h-6 text-green-500 fill-current" /> Green Credits Hub
           </h1>
-          <p className="text-xs text-emerald-150 leading-relaxed max-w-md">
+          <p className="text-xs text-surface-variant leading-relaxed max-w-md font-medium">
             Amazon's circular returns ledger. Earn credits for recycling, refurbishing, and buying certified used items.
           </p>
         </div>
 
         {/* Balance card */}
-        <div className="bg-white/10 backdrop-blur-md border border-white/20 px-6 py-4 rounded-lg flex items-center gap-4 flex-shrink-0">
-          <div className="bg-emerald-500 rounded-full p-2">
+        <div className="bg-deep-navy border-[0.5px] border-outline-variant px-6 py-4 rounded-xl flex items-center gap-4 flex-shrink-0">
+          <div className="bg-green-600 rounded-full p-2">
             <Leaf className="w-6 h-6 text-white fill-current" />
           </div>
           <div>
-            <span className="text-[10px] text-emerald-200 font-bold uppercase tracking-wider block">Your Balance</span>
-            <span className="text-3xl font-black text-white leading-none block">450 <span className="text-lg font-bold">Cr</span></span>
+            <span className="text-[10px] text-surface-variant font-bold uppercase tracking-wider block">Your Balance</span>
+            <span className="text-3xl font-black text-accent-yellow leading-none block">450 <span className="text-lg font-bold">Cr</span></span>
           </div>
         </div>
       </div>
@@ -73,19 +73,19 @@ export default function GreenCredits() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
         {/* Left column: How to earn */}
-        <div className="bg-white border border-[#D5D9D9] rounded-md p-6 space-y-4">
-          <h2 className="text-base font-bold text-gray-900 border-b border-gray-100 pb-2 flex items-center gap-1.5">
-            <CheckCircle className="w-5 h-5 text-amazon-green" /> How to Earn Credits
+        <div className="bg-white border-[0.5px] border-outline-variant rounded-xl p-6 space-y-4">
+          <h2 className="text-sm font-bold text-ink-black border-b border-surface-container pb-2 flex items-center gap-1.5 uppercase tracking-wider">
+            <CheckCircle className="w-5 h-5 text-green-700" /> How to Earn Credits
           </h2>
 
           <div className="space-y-4">
             {earningsList.map((item, idx) => (
-              <div key={idx} className="flex justify-between items-start gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors border border-gray-100">
+              <div key={idx} className="flex justify-between items-start gap-4 p-3.5 hover:bg-surface-container-low rounded-xl transition-colors border-[0.5px] border-outline-variant bg-surface-container-lowest">
                 <div className="space-y-0.5">
-                  <h4 className="text-xs font-bold text-gray-900">{item.action}</h4>
-                  <p className="text-[11px] text-gray-500 leading-tight">{item.desc}</p>
+                  <h4 className="text-xs font-bold text-ink-black">{item.action}</h4>
+                  <p className="text-[11px] text-outline font-medium leading-tight">{item.desc}</p>
                 </div>
-                <span className="text-xs font-extrabold text-amazon-green whitespace-nowrap bg-emerald-50 px-2 py-0.5 border border-emerald-100 rounded">
+                <span className="text-xs font-black text-green-700 whitespace-nowrap bg-emerald-50 px-2 py-0.5 border-[0.5px] border-emerald-200 rounded-lg">
                   {item.credits}
                 </span>
               </div>
@@ -94,20 +94,20 @@ export default function GreenCredits() {
         </div>
 
         {/* Right column: Rewards */}
-        <div className="bg-white border border-[#D5D9D9] rounded-md p-6 space-y-4">
-          <h2 className="text-base font-bold text-gray-900 border-b border-gray-100 pb-2 flex items-center gap-1.5">
-            <Gift className="w-5 h-5 text-amazon-teal" /> Redeem Eco Rewards
+        <div className="bg-white border-[0.5px] border-outline-variant rounded-xl p-6 space-y-4">
+          <h2 className="text-sm font-bold text-ink-black border-b border-surface-container pb-2 flex items-center gap-1.5 uppercase tracking-wider">
+            <Gift className="w-5 h-5 text-link-blue" /> Redeem Eco Rewards
           </h2>
 
           <div className="space-y-4">
             {rewards.map((reward, idx) => (
-              <div key={idx} className="flex justify-between items-center gap-4 p-3 border border-gray-200 rounded-lg hover:border-amazon-teal">
+              <div key={idx} className="flex justify-between items-center gap-4 p-3.5 border-[0.5px] border-outline-variant rounded-xl hover:border-link-blue transition-colors bg-surface-container-lowest">
                 <div className="space-y-0.5">
-                  <h4 className="text-xs font-bold text-gray-900">{reward.title}</h4>
-                  <p className="text-[11px] text-gray-500 leading-tight">{reward.desc}</p>
-                  <span className="text-[10px] text-amazon-teal font-semibold block mt-1">{reward.cost} required</span>
+                  <h4 className="text-xs font-bold text-ink-black">{reward.title}</h4>
+                  <p className="text-[11px] text-outline font-medium leading-tight">{reward.desc}</p>
+                  <span className="text-[10px] text-link-blue font-bold block mt-1">{reward.cost} required</span>
                 </div>
-                <button className="px-3 py-1 bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 border border-yellow-400 rounded-full text-[10px] font-bold shadow-xs whitespace-nowrap cursor-pointer">
+                <button className="px-4 py-2 bg-secondary-container hover:bg-[#e68a00] text-ink-black rounded-lg text-[10px] font-bold border-[0.5px] border-outline-variant whitespace-nowrap cursor-pointer transition-colors uppercase tracking-wider">
                   Redeem
                 </button>
               </div>
@@ -118,14 +118,14 @@ export default function GreenCredits() {
       </div>
 
       {/* Sustainability pledge footer card */}
-      <div className="bg-white border border-[#D5D9D9] rounded-md p-6 mt-6 flex flex-col sm:flex-row items-center gap-4 select-none">
-        <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-amazon-green flex-shrink-0">
+      <div className="bg-white border-[0.5px] border-outline-variant rounded-xl p-6 mt-6 flex flex-col sm:flex-row items-center gap-4 select-none">
+        <div className="w-12 h-12 rounded-full bg-emerald-50 border-[0.5px] border-emerald-200 flex items-center justify-center text-green-700 flex-shrink-0">
           <Heart className="w-6 h-6 fill-current" />
         </div>
         <div>
-          <h3 className="text-sm font-bold text-gray-900">circular return verification pledge</h3>
-          <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-            By verifying open-box returned item condition with Gemini Computer Vision, SecondLife bypasses standard liquidation shipping and routes items locally, lowering carbon footprints by over 80%.
+          <h3 className="text-xs font-bold text-ink-black uppercase tracking-wider">circular return verification pledge</h3>
+          <p className="text-xs text-outline mt-1.5 leading-relaxed font-medium">
+            By verifying open-box returned item condition with Groq Llama Vision VLM, SecondLife bypasses standard liquidation shipping and routes items locally, lowering carbon footprints by over 80%.
           </p>
         </div>
       </div>

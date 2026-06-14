@@ -5,7 +5,11 @@ export const AWS_ACCESS_KEY_ID     = process.env.AWS_ACCESS_KEY_ID;
 export const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
 export const AWS_REGION            = process.env.AWS_REGION || 'ap-south-1';
 
-// ─── Gemini ─────────────────────────────────────────────────────────────────
+// ─── Groq (Vision-Language Model — replaces Gemini for image grading) ───────
+// Set GROQ_API_KEY in your .env file. Get a free key at: https://console.groq.com
+export const GROQ_API_KEY          = process.env.GROQ_API_KEY;
+
+// ─── Gemini (kept for reference; no longer used by grading pipeline) ─────────
 export const GEMINI_API_KEY        = process.env.GEMINI_API_KEY;
 
 // ─── S3 ─────────────────────────────────────────────────────────────────────
@@ -19,6 +23,7 @@ export default {
   AWS_ACCESS_KEY_ID,
   AWS_SECRET_ACCESS_KEY,
   AWS_REGION,
+  GROQ_API_KEY,
   GEMINI_API_KEY,
   S3_BUCKET_NAME,
   DYNAMO_TABLE_NAME,

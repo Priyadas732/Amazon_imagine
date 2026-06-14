@@ -1,7 +1,8 @@
-import { GEMINI_API_KEY } from "../../config/setting.js";
+import { GROQ_API_KEY } from "../../config/setting.js";
 import * as dynamoService from "../services/dynamo.service.js";
-import { generateContentWithRotation } from "../services/gemini.service.js";
 import { predictReturnRisk } from "../services/predictReturnRisk.js";
+// Note: AI text generation for risk narration is handled by the scoring engine
+// (no external AI call needed — the engine generates explanations from data).
 
 // Fallback items to simulate real database records in development/demo context
 const FALLBACK_ITEMS = {
@@ -140,53 +141,38 @@ export async function checkPurchaseRisk(req, res, next) {
     let responseText = "";
     let useHeuristic = false;
 
-    // 4. Try querying Gemini 3.5 Flash using structured output schema
-    try {
-      if (!GEMINI_API_KEY) {
-        throw new Error("Gemini API key is not configured. Falling back to rule-based engine.");
-      }
-
-      const prompt = `Analyze these retail signals. Determine if there is a conflict. If return risk exceeds 50%, flag an intervention.
-Input Context: ${JSON.stringify(deepContextPayload)}
-Instructions: Determine the probability of return. If the category is electronics, check carrier locks and compatibility.`;
-
-      const result = await generateContentWithRotation(
-        prompt,
-        {
-          model: "gemini-2.0-flash-lite",
-          generationConfig: {
-            responseMimeType: "application/json",
-            responseSchema: {
-              type: "object",
-              properties: {
-                riskPercent: { type: "number", description: "Calculated risk percentage (0 to 100)" },
-                showAlert: { type: "boolean" },
-                interventionStrategy: { type: "string", enum: ["HISTORY_BANNER", "SMART_SWAP", "CAMERA_VERIFICATION", "NONE"] },
-                uiCopy: {
-                  type: "object",
-                  properties: {
-                    headline: { type: "string" },
-                    body: { type: "string" },
-                    actionButtonText: { type: "string" }
-                  },
-                  required: ["headline", "body", "actionButtonText"]
-                },
-                suggestedAlternativeSpecs: { type: "object" }
-              },
-              required: ["riskPercent", "showAlert", "interventionStrategy", "uiCopy"]
-            }
-          }
-        }
-      );
-      responseText = result.response.text();
-    } catch (apiErr) {
-      console.error("❌ Gemini API risk evaluation failed. Actual Error:", apiErr);
-      useHeuristic = true;
-    }
-
-    // Parse AI output or invoke local rule-based fallback
+    // 4. Run the computed engine for footwear & clothing size checks, or fallback
     let directive = {};
-    if (useHeuristic || !responseText) {
+    const activeUserId = userId || "u1";
+    const chosenSize = currentSpecs?.size || "";
+
+    if (product.category === "footwear" || product.category === "clothing") {
+      const riskResult = predictReturnRisk(activeUserId, product.productId, chosenSize);
+
+      directive = {
+        riskPercent: riskResult.riskPct,
+        showAlert: riskResult.warn,
+        interventionStrategy: riskResult.warn ? "CAMERA_VERIFICATION" : "NONE",
+        uiCopy: {
+          headline: riskResult.warn ? "⚠️ AI Return Prevention Alert" : "✅ AI Size Optimization Active",
+          body: riskResult.warn
+            ? `Heads up! ${riskResult.product.brand} runs ${riskResult.product.sizeBias}. ` + 
+              (riskResult.signals.find(s => s.type === "history")?.text || "") + 
+              ` Sizing cohorts suggest size ${riskResult.suggestion} instead.`
+            : "AI Recommended Size / Fit optimized. Return risk reduced.",
+          actionButtonText: riskResult.warn 
+            ? (product.category === "footwear" ? "Scan Fit with AI (A4 Paper Ref)" : "Scan Face Mesh for Fitting (Credit Card Ref)") 
+            : ""
+        },
+        suggestedAlternativeSpecs: riskResult.suggestion ? { size: riskResult.suggestion } : {},
+        checksBreakdown: {
+          history: riskResult.signals.find(s => s.type === "history")?.text || "No recent returns for this brand/category.",
+          pattern: riskResult.signals.find(s => s.type === "product")?.text || `Baseline return rate: ${Math.round(riskResult.product.returnRate * 100)}%`,
+          cohort: riskResult.signals.find(s => s.type === "cohort")?.text || "Cohort consensus matches selected configuration."
+        }
+      };
+    } else {
+      // Heuristic fallbacks for other categories
       if (isSizeOptimized) {
         directive = {
           riskPercent: 3,
@@ -205,56 +191,52 @@ Instructions: Determine the probability of return. If the category is electronic
           }
         };
       } else {
-        const normUserId = (userId === "u1" || userId === "u2") ? userId : (userId && userId.toLowerCase().includes("rahul") ? "u2" : "u1");
-        const chosenSize = currentSpecs?.size || currentSpecs?.carrier || currentSpecs?.cleared || "";
-        const prediction = predictReturnRisk(normUserId, productId, chosenSize);
-
         let strategy = "NONE";
-        let headline = "⚠️ AI Return Prevention Alert";
+        let headline = "";
+        let body = "";
         let actionButtonText = "";
         let suggestedAlternativeSpecs = {};
+        let checksBreakdown = {};
+        let riskPercent = 15;
+        let showAlert = false;
 
-        if (product.category === "footwear") {
-          strategy = "CAMERA_VERIFICATION";
-          headline = "⚠️ AI Sizing Warning (Nike runs small)";
-          actionButtonText = "Scan Fit with AI (A4 Paper Ref)";
-          suggestedAlternativeSpecs = { size: prediction.suggestion || "7.5" };
-        } else if (product.category === "clothing") {
-          strategy = "CAMERA_VERIFICATION";
-          headline = "⚠️ AI Sizing Conflict Detected";
-          actionButtonText = "Scan Face Mesh for Fitting (Credit Card Ref)";
-          suggestedAlternativeSpecs = { size: prediction.suggestion || "M" };
-        } else if (product.category === "appliance" || product.category === "furniture") {
+        if (product.category === "appliance" || product.category === "furniture") {
+          riskPercent = 55;
+          showAlert = true;
           strategy = "CAMERA_VERIFICATION";
           headline = "⚠️ AI Placement & Clearance Warning";
+          body = "This professional blender has a tall profile (45cm). Customers in your cohort frequently return it because it doesn't clear kitchen cabinets.";
           actionButtonText = "Measure Room Clearance (Door Ref)";
           suggestedAlternativeSpecs = { cleared: "true" };
+          checksBreakdown = {
+            history: "She returned 1 appliance last year. Reason: 'exceeded counter height'",
+            pattern: "Blender has 15% return rate. Top reason: cabinet clearance",
+            cohort: "Buyers with similar layouts chose smaller profiles"
+          };
         } else if (product.category === "electronics") {
+          riskPercent = 45;
+          showAlert = true;
           strategy = "SMART_SWAP";
           headline = "⚠️ Carrier Compatibility Warning";
+          body = "This Galaxy S22 is locked to T-Mobile. You purchased and kept Verizon compatible items recently. Cohorts recommend swapping to the Unlocked model.";
           actionButtonText = "Swap to Unlocked Version (+$20)";
           suggestedAlternativeSpecs = { carrier: "Unlocked" };
+          checksBreakdown = {
+            history: "You returned 1 network-locked phone last year.",
+            pattern: "This carrier-locked ASIN has a 12% return rate.",
+            cohort: "Buyers with your network history bought the Unlocked model."
+          };
         }
 
-        const body = prediction.signals.map(s => s.text).join(" ") || `Base return risk computed from category baseline profile.`;
-
-        const checksBreakdown = {
-          history: prediction.signals.find(s => s.type === "personal")?.text || "No prior return warnings in this category.",
-          pattern: prediction.signals.find(s => s.type === "product")?.text || "Base category return rate is normal.",
-          cohort: prediction.signals.find(s => s.type === "cohort")?.text || "Cohort size patterns match choice."
-        };
-
         directive = {
-          riskPercent: prediction.riskPct,
-          showAlert: prediction.warn,
+          riskPercent,
+          showAlert,
           interventionStrategy: strategy,
           uiCopy: { headline, body, actionButtonText },
           suggestedAlternativeSpecs,
           checksBreakdown
         };
       }
-    } else {
-      directive = JSON.parse(responseText);
     }
 
     // Force synchronization constraints
@@ -277,7 +259,7 @@ Instructions: Determine the probability of return. If the category is electronic
 
     // Append raw rules metadata so the frontend knows what scanning mode to launch
     directive.preventionRules = product.preventionRules;
-    directive.gradedBy = useHeuristic || !responseText ? "fallback" : "gemini";
+    directive.gradedBy = "engine";
 
     return res.json({
       success: true,

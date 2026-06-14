@@ -16,28 +16,28 @@ export default function TopBar({ currentRole, onRoleChange }) {
   };
 
   return (
-    <div className="flex flex-col font-sans w-full sticky top-0 z-50 shadow-md">
+    <div className="flex flex-col font-sans w-full sticky top-0 z-50 border-b border-outline-variant select-none">
       {/* Primary Top Bar */}
-      <div className="bg-amazon-navy text-white px-4 py-2 flex items-center justify-between gap-4 select-none">
+      <div className="bg-primary-container text-white px-margin-desktop py-3 flex items-center justify-between gap-4">
         
         {/* Brand Logo */}
-        <Link to="/" className="flex items-center gap-1.5 py-1 px-2 hover:outline-1 hover:outline-white">
-          <div className="w-8 h-8 rounded-md bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center shadow-sm">
-            <RefreshCw className="w-5 h-5 text-gray-900 stroke-[3]" />
+        <Link to="/" className="flex items-center gap-2 hover:text-accent-yellow transition-colors">
+          <div className="w-8 h-8 rounded-lg bg-secondary-container flex items-center justify-center border-[0.5px] border-outline-variant">
+            <RefreshCw className="w-5 h-5 text-ink-black stroke-[3]" />
           </div>
           <div className="flex flex-col leading-none">
-            <span className="font-display font-extrabold text-lg tracking-tight">
-              amazon
+            <span className="font-display font-extrabold text-lg tracking-tight text-accent-yellow">
+              Second Life
             </span>
-            <span className="text-[10px] text-amber-400 font-bold -mt-0.5 tracking-wider uppercase">
-              SecondLife
+            <span className="text-[10px] text-surface-variant font-bold tracking-wider uppercase">
+              Commerce Portal
             </span>
           </div>
         </Link>
 
         {/* Central Search Bar */}
-        <form onSubmit={handleSearchSubmit} className="flex-grow max-w-2xl hidden md:flex items-center h-10 rounded-md overflow-hidden bg-white">
-          <select className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs px-3 h-full border-r border-gray-300 focus:outline-none cursor-pointer">
+        <form onSubmit={handleSearchSubmit} className="flex-grow max-w-xl hidden md:flex items-center h-10 rounded-xl overflow-hidden bg-white flat-border">
+          <select className="bg-surface-container-low text-ink-black text-xs px-3 h-full border-r border-outline-variant focus:outline-none cursor-pointer font-medium">
             <option>Used Deals</option>
             <option>All Departments</option>
             <option>Climate Pledge</option>
@@ -47,26 +47,26 @@ export default function TopBar({ currentRole, onRoleChange }) {
             placeholder="Search returned, open-box, or certified used items..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-grow h-full px-3 text-sm text-gray-900 focus:outline-none"
+            className="flex-grow h-full px-3 text-sm text-ink-black focus:outline-none bg-white font-medium"
           />
-          <button type="submit" className="bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 h-full px-5 flex items-center justify-center transition-colors border-none">
+          <button type="submit" className="bg-secondary-container hover:bg-[#e68a00] text-ink-black h-full px-5 flex items-center justify-center transition-colors border-none cursor-pointer">
             <Search className="w-5 h-5 stroke-[2.5]" />
           </button>
         </form>
 
         {/* Right Side Links */}
-        <div className="flex items-center gap-4 text-xs font-semibold">
+        <div className="flex items-center gap-5 text-xs font-bold">
           
           {/* Role Switcher Pill inside header */}
-          <div className="bg-gray-800 border border-gray-700 rounded-full p-0.5 flex items-center shadow-inner">
+          <div className="bg-deep-navy border-[0.5px] border-outline-variant rounded-full p-0.5 flex items-center">
             {["buyer", "seller", "donor", "ngo"].map((role) => (
               <button
                 key={role}
                 onClick={() => onRoleChange(role)}
                 className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
                   currentRole === role
-                    ? "bg-amazon-yellow text-gray-900 shadow-sm"
-                    : "text-gray-400 hover:text-white"
+                    ? "bg-secondary-container text-ink-black"
+                    : "text-surface-variant hover:text-white"
                 }`}
               >
                 {role}
@@ -75,27 +75,27 @@ export default function TopBar({ currentRole, onRoleChange }) {
           </div>
 
           {/* Green Credits indicator */}
-          <Link to="/credits" className="flex items-center gap-1.5 py-1 px-2 hover:outline-1 hover:outline-white text-emerald-400">
-            <Leaf className="w-4 h-4 fill-current" />
+          <Link to="/credits" className="flex items-center gap-1.5 py-1 px-2 text-accent-yellow hover:text-white transition-colors">
+            <Leaf className="w-4 h-4 fill-current text-green-500" />
             <div className="flex flex-col">
-              <span className="text-[10px] text-gray-400 font-normal leading-tight">Eco Balance</span>
+              <span className="text-[9px] text-surface-variant font-normal leading-tight">Eco Balance</span>
               <span className="font-bold text-sm leading-tight text-white">450 Cr</span>
             </div>
           </Link>
 
           {/* Returns link */}
-          <Link to="/seller/return" className="py-1 px-2 hover:outline-1 hover:outline-white hidden sm:block">
+          <Link to="/seller/return" className="py-1 px-2 text-white hover:text-accent-yellow transition-colors hidden sm:block">
             <div className="flex flex-col">
-              <span className="text-[10px] text-gray-400 font-normal leading-tight">Returns &</span>
+              <span className="text-[9px] text-surface-variant font-normal leading-tight">Returns &</span>
               <span className="font-bold leading-tight">AI Grading</span>
             </div>
           </Link>
 
           {/* Cart Icon */}
-          <Link to="/buyer" className="flex items-end gap-1 py-1 px-2 hover:outline-1 hover:outline-white">
+          <Link to="/buyer" className="flex items-end gap-1.5 py-1 px-2 text-white hover:text-accent-yellow transition-colors">
             <div className="relative">
               <ShoppingCart className="w-6 h-6" />
-              <span className="absolute -top-1 left-2 bg-orange-600 text-white rounded-full text-[9px] w-4.5 h-4.5 flex items-center justify-center font-bold">
+              <span className="absolute -top-1 -right-1.5 bg-secondary-container text-ink-black rounded-full text-[9px] w-4.5 h-4.5 flex items-center justify-center font-bold border-[0.5px] border-outline-variant">
                 1
               </span>
             </div>
@@ -107,13 +107,13 @@ export default function TopBar({ currentRole, onRoleChange }) {
       </div>
 
       {/* Secondary Bar */}
-      <div className="bg-amazon-navyLight text-white px-4 py-1.5 text-xs font-semibold flex items-center justify-between select-none">
-        <div className="flex items-center gap-4">
-          <span className="cursor-pointer hover:underline">All</span>
+      <div className="bg-deep-navy text-white px-margin-desktop py-2 text-xs font-semibold flex items-center justify-between border-t border-outline-variant">
+        <div className="flex items-center gap-6">
+          <span className="cursor-pointer hover:text-accent-yellow transition-colors">All</span>
           <NavLink
             to="/seller/return"
             className={({ isActive }) =>
-              `hover:underline ${isActive ? "text-amber-400 font-bold" : ""}`
+              `hover:text-accent-yellow transition-colors ${isActive ? "text-accent-yellow font-bold" : "text-surface-variant"}`
             }
           >
             Sell / Return Form
@@ -121,7 +121,7 @@ export default function TopBar({ currentRole, onRoleChange }) {
           <NavLink
             to="/buyer"
             className={({ isActive }) =>
-              `hover:underline ${isActive ? "text-amber-400 font-bold" : ""}`
+              `hover:text-accent-yellow transition-colors ${isActive ? "text-accent-yellow font-bold" : "text-surface-variant"}`
             }
           >
             Certified Used Store
@@ -129,17 +129,17 @@ export default function TopBar({ currentRole, onRoleChange }) {
           <NavLink
             to="/credits"
             className={({ isActive }) =>
-              `hover:underline ${isActive ? "text-amber-400 font-bold" : ""}`
+              `hover:text-accent-yellow transition-colors ${isActive ? "text-accent-yellow font-bold" : "text-surface-variant"}`
             }
           >
             Green Credits Hub
           </NavLink>
-          <span className="text-emerald-400 flex items-center gap-1 cursor-pointer hover:underline">
+          <span className="text-green-400 flex items-center gap-1 cursor-pointer hover:text-green-300 transition-colors">
             <Leaf className="w-3.5 h-3.5 fill-current" /> Climate Pledge Friendly
           </span>
         </div>
-        <div className="text-[11px] text-gray-300 hidden md:block">
-          Active Session Role: <span className="font-bold text-white uppercase">{currentRole}</span>
+        <div className="text-[11px] text-surface-variant hidden md:block">
+          Active Session Role: <span className="font-bold text-accent-yellow uppercase">{currentRole}</span>
         </div>
       </div>
     </div>

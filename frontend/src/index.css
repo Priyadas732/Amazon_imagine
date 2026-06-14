@@ -1,31 +1,98 @@
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;700;850;900&display=swap');
 @import "tailwindcss";
 
 @theme {
+  /* Stitch UI Brand Palette */
+  --color-accent-yellow: #FEBD69;
+  --color-background: #f9f9f9;
+  --color-deep-navy: #131921;
+  --color-ink-black: #0F1111;
+  --color-link-blue: #007185;
+  --color-primary: #0e1a28;
+  --color-primary-container: #232f3e;
+  --color-secondary: #8a5100;
+  --color-secondary-container: #fe9800;
+  --color-surface: #f9f9f9;
+  --color-surface-dim: #dadada;
+  --color-surface-bright: #f9f9f9;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f3f3f3;
+  --color-surface-container: #eeeeee;
+  --color-surface-container-high: #e8e8e8;
+  --color-surface-container-highest: #e2e2e2;
+  --color-outline: #75777c;
+  --color-outline-variant: #c5c6cc;
+  --color-surface-variant: #e2e2e2;
+
+  /* Keep legacy colors as aliases so existing styles don't break */
   --color-amazon-navy: #131921;
   --color-amazon-navyLight: #232F3E;
-  --color-amazon-yellow: #FFD814;
-  --color-amazon-yellowHover: #F7CA00;
-  --color-amazon-red: #B12704;
-  --color-amazon-bg: #EAEDED;
-  --color-amazon-teal: #007185;
-  --color-amazon-green: #007600;
-  
-  --font-sans: 'Inter', 'Arial', sans-serif;
-  --font-display: 'Outfit', sans-serif;
+  --color-amazon-yellow: #fe9800; /* Replaced with Stitch orange/yellow */
+  --color-amazon-yellowHover: #e68a00;
+  --color-amazon-red: #ba1a1a; /* Replaced with Stitch error red */
+  --color-amazon-bg: #f3f3f3; /* Replaced with Stitch light background */
+  --color-amazon-teal: #007185; /* Replaced with Stitch link blue */
+  --color-amazon-green: #2e7d32;
+
+  /* Fonts */
+  --font-sans: 'Hanken Grotesk', 'Inter', 'Arial', sans-serif;
+  --font-display: 'Hanken Grotesk', sans-serif;
+
+  /* Borders & Roundness */
+  --radius-xl: 12px;
 }
 
 body {
-  background-color: var(--color-amazon-bg);
-  color: #111827;
+  background-color: var(--color-surface-container-low);
+  color: var(--color-on-surface);
   font-family: var(--font-sans);
 }
 
-/* Custom subtle animations */
-@keyframes scan {
-  0%, 100% { top: 0%; }
-  50% { top: 100%; }
+/* Custom flat UI utilities */
+.flat-border {
+  border: 0.5px solid var(--color-outline-variant);
 }
 
-.animate-scan {
-  animation: scan 2s infinite ease-in-out;
+/* Scrollbar styling for AI/Spatial logs */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(254, 189, 105, 0.3);
+  border-radius: 99px;
+}
+
+/* AI scan beam animation overlay */
+@keyframes scan {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+.scan-line {
+  animation: scan 2.5s linear infinite;
+}
+
+.neural-line {
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, #FEBD69, transparent);
+  width: 100%;
+  position: absolute;
+  animation: scan-vertical 3s linear infinite;
+}
+
+@keyframes scan-vertical {
+  0% { top: 0; opacity: 0; }
+  50% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+/* Pulsing outline for matched states */
+.ai-glow {
+  box-shadow: 0 0 15px rgba(254, 189, 105, 0.15);
+}
+.best-route-glow {
+  border: 2px solid #2e7d32 !important;
 }

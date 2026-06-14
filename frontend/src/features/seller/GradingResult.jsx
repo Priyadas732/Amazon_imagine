@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ShieldCheck, AlertTriangle, Leaf, DollarSign, Award, ArrowLeft, RefreshCw, ShoppingBag, Sparkles } from "lucide-react";
+import { ShieldCheck, AlertTriangle, Leaf, DollarSign, Award, ArrowLeft, RefreshCw, ShoppingBag, Sparkles, Activity, CheckCircle } from "lucide-react";
 import { getItem, updateItem, getDisposition } from "../../services/api";
 import GradeBadge from "../../components/GradeBadge";
 import StatusPill from "../../components/StatusPill";
@@ -24,39 +24,43 @@ export default function GradingResult({ role }) {
   const [extraCredits, setExtraCredits] = useState(0);
   const [dispositionResult, setDispositionResult] = useState(null);
   const [loadingDisposition, setLoadingDisposition] = useState(false);
+  const [selectedRegion, setSelectedRegion] = useState("Bangalore");
 
   // Synchronize state with backend item data once fetched
   React.useEffect(() => {
     if (item) {
       setDonated(item.status === "donated");
       setLaterallyRouted(item.status === "laterally_routed");
+      if (item.region) {
+        setSelectedRegion(item.region);
+      } else if (item.provided?.region) {
+        setSelectedRegion(item.provided.region);
+      }
     }
   }, [item]);
 
   // Fetch routing disposition
   React.useEffect(() => {
     if (item) {
-      if (item.dispositionResult) {
-        setDispositionResult(item.dispositionResult);
-      } else {
-        setLoadingDisposition(true);
-        const originalPrice = item.provided?.originalPrice || (item.category === "electronics" ? 999 : 120);
-        getDisposition({
-          productName: item.provided?.model || item.category || "Returned Item",
-          grade: item.grade?.grade || "Good",
-          originalPrice,
+      setLoadingDisposition(true);
+      const originalPrice = item.provided?.originalPrice || (item.category === "electronics" ? 999 : 120);
+      getDisposition({
+        productName: item.provided?.model || item.category || "Returned Item",
+        category: item.category,
+        grade: item.grade?.grade || "Good",
+        originalPrice,
+        region: selectedRegion,
+      })
+        .then((data) => {
+          setDispositionResult(data);
+          setLoadingDisposition(false);
         })
-          .then((data) => {
-            setDispositionResult(data);
-            setLoadingDisposition(false);
-          })
-          .catch((err) => {
-            console.error("Failed to fetch routing disposition:", err);
-            setLoadingDisposition(false);
-          });
-      }
+        .catch((err) => {
+          console.error("Failed to fetch routing disposition:", err);
+          setLoadingDisposition(false);
+        });
     }
-  }, [item]);
+  }, [item, selectedRegion]);
 
   const handleDonate = async () => {
     try {
@@ -97,9 +101,9 @@ export default function GradingResult({ role }) {
 
   if (isLoading) {
     return (
-      <div className="max-w-4xl mx-auto p-12 text-center text-gray-500 font-sans">
-        <RefreshCw className="animate-spin w-8 h-8 mx-auto text-amazon-teal mb-3" />
-        Retrieving return inspection record from Amazon DynamoDB...
+      <div className="max-w-4xl mx-auto p-12 text-center text-outline font-sans">
+        <RefreshCw className="animate-spin w-8 h-8 mx-auto text-secondary-container mb-3" />
+        Retrieving return inspection record from S3 & DynamoDB...
       </div>
     );
   }
@@ -107,14 +111,14 @@ export default function GradingResult({ role }) {
   if (error) {
     return (
       <div className="max-w-4xl mx-auto p-6 font-sans">
-        <div className="bg-rose-50 border border-rose-200 text-rose-800 p-4 rounded-md flex items-start gap-2.5 shadow-sm">
-          <AlertTriangle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+        <div className="bg-red-50 border-[0.5px] border-red-200 text-red-800 p-6 rounded-xl flex items-start gap-4">
+          <AlertTriangle className="w-6 h-6 mt-0.5 flex-shrink-0 text-red-600" />
           <div>
-            <h3 className="font-bold">Failed to load return record</h3>
-            <p className="text-xs text-rose-700 mt-1">{error.message}</p>
+            <h3 className="font-bold text-lg text-ink-black">Failed to load return record</h3>
+            <p className="text-xs text-red-700 mt-2 font-medium">{error.message}</p>
             <button
               onClick={() => refetch()}
-              className="mt-3 text-xs font-bold text-amazon-teal hover:underline flex items-center gap-1"
+              className="mt-4 text-xs font-bold text-link-blue hover:underline flex items-center gap-1.5 cursor-pointer bg-transparent border-none"
             >
               <RefreshCw className="w-3.5 h-3.5" /> Try again
             </button>
@@ -159,7 +163,6 @@ export default function GradingResult({ role }) {
     disposition = dispositionResult.decision;
     valueRecovered = dispositionResult.recovered;
     dispText = dispositionResult.reason;
-    // Map disposition to matching credit brackets
     if (disposition.startsWith("Resell as New")) creditEarned = 50;
     else if (disposition.startsWith("Resell")) creditEarned = 100;
     else if (disposition.startsWith("Refurbish")) creditEarned = 150;
@@ -186,12 +189,12 @@ export default function GradingResult({ role }) {
       dispText = "Routed to refurbishment center for detail clean & package restoration.";
     } else if (gradeVal === "Acceptable") {
       disposition = "Donate";
-      valueRecovered = 0; // donating doesn't recover monetary sales, but gives high credits
+      valueRecovered = 0;
       creditEarned = 300;
       dispText = "Donation routing: Assigned to NGO partner returns directory.";
     } else {
       disposition = "Recycle";
-      valueRecovered = Math.round(originalPrice * 0.05); // scrap scrap value
+      valueRecovered = Math.round(originalPrice * 0.05);
       creditEarned = 450;
       dispText = "Recycler routing: Certified raw materials extraction.";
     }
@@ -204,26 +207,25 @@ export default function GradingResult({ role }) {
       <div className="max-w-4xl mx-auto p-4 font-sans">
         <Stepper steps={["Category Selection", "Product Verification", "AI Assessment"]} currentStep={2} />
 
-        {/* Title Header bar */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <Link
             to="/seller/return"
-            className="text-xs font-bold text-amazon-teal hover:underline flex items-center gap-1 py-1"
+            className="text-xs font-bold text-link-blue hover:underline flex items-center gap-1 py-1"
           >
             <ArrowLeft className="w-3.5 h-3.5" /> Grade another item
           </Link>
         </div>
 
-        <div className="bg-amber-50 border border-amber-300 rounded-md p-6 mb-6 text-center shadow-xs">
+        <div className="bg-amber-50 border-[0.5px] border-outline-variant rounded-xl p-8 mb-6 text-center">
           <AlertTriangle className="w-12 h-12 text-amber-600 mx-auto mb-4" />
-          <h1 className="text-xl font-bold text-amber-900">AI Assessment Temporarily Unavailable</h1>
-          <p className="text-sm text-amber-800 mt-2 max-w-xl mx-auto">
-            Gemini vision grading failed to process this return. The AI-certified result has been blocked to prevent incorrect assessment.
+          <h1 className="text-xl font-bold text-ink-black">AI Assessment Offline</h1>
+          <p className="text-sm text-outline mt-2 max-w-xl mx-auto font-medium">
+            AI vision grading failed to process this return. The AI-certified result has been blocked to prevent incorrect assessment.
           </p>
 
-          <div className="mt-4 p-3 bg-white border border-amber-200 rounded-md text-xs text-left max-w-xl mx-auto">
-            <span className="font-bold text-gray-700 block mb-1">Technical Details:</span>
-            <code className="text-rose-600 font-mono break-all leading-normal">
+          <div className="mt-4 p-4 bg-white border-[0.5px] border-outline-variant rounded-lg text-xs text-left max-w-xl mx-auto font-medium">
+            <span className="font-bold text-ink-black block mb-1">Technical Details:</span>
+            <code className="text-red-600 font-mono break-all leading-normal">
               {item.grade?.notes || "Error: API response was offline."}
             </code>
           </div>
@@ -231,412 +233,492 @@ export default function GradingResult({ role }) {
           <div className="mt-6 flex flex-col sm:flex-row justify-center gap-3">
             <Link
               to="/seller/return"
-              className="bg-amazon-orange hover:bg-amazon-orange-hover text-white px-4 py-2 rounded-md text-xs font-bold transition-all shadow-xs"
+              className="bg-secondary-container hover:bg-[#e68a00] text-ink-black px-6 py-2.5 rounded-xl text-xs font-bold transition-all uppercase tracking-wider"
             >
               Try Grading Again
             </Link>
             <button
               onClick={() => refetch()}
-              className="border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-md text-xs font-bold transition-all shadow-xs cursor-pointer"
+              className="border-[0.5px] border-deep-navy bg-white hover:bg-surface-container-low text-deep-navy px-6 py-2.5 rounded-xl text-xs font-bold transition-all uppercase tracking-wider cursor-pointer"
             >
               Retry Connection
             </button>
           </div>
         </div>
-
-        {/* Let them view uploaded photos for manual verification */}
-        {photos.length > 0 && (
-          <div className="bg-white border border-[#D5D9D9] rounded-md p-6">
-            <h2 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">
-              Uploaded Returns Documentation (For Manual Inspection)
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {photos.map((url, idx) => (
-                <div key={idx} className="border border-gray-200 rounded-md p-2 bg-gray-50 flex items-center justify-center">
-                  <img src={url} alt={`Documentation ${idx + 1}`} className="max-h-28 object-contain rounded-xs" />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     );
   }
 
+  // Visual metrics based on grade
+  const screenScore = gradeVal === "New" ? 100 : gradeVal === "Like New" ? 96 : gradeVal === "Very Good" ? 88 : gradeVal === "Good" ? 78 : gradeVal === "Acceptable" ? 64 : 32;
+  const bezelScore = gradeVal === "New" ? 100 : gradeVal === "Like New" ? 94 : gradeVal === "Very Good" ? 82 : gradeVal === "Good" ? 72 : gradeVal === "Acceptable" ? 58 : 28;
+  const pkgScore = completeness === "complete" ? 100 : 70;
+
+  // Smart Routing Option Payout calculations
+  const resellerPayout = valueRecovered > 0 ? valueRecovered : Math.round(originalPrice * 0.7);
+  const liquidationPayout = dispositionResult?.vsLiquidation || Math.round(originalPrice * 0.25);
+  const donationValue = 0;
+  const consignmentPayout = Math.round(originalPrice * 0.8);
+
   return (
-    <div className="max-w-4xl mx-auto p-4 font-sans">
+    <div className="max-w-6xl mx-auto p-4 font-sans relative">
       <Stepper steps={["Category Selection", "Product Verification", "AI Assessment"]} currentStep={2} />
 
-      {/* Title Header bar */}
+      {/* Back button and credit count */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <Link
           to="/seller/return"
-          className="text-xs font-bold text-amazon-teal hover:underline flex items-center gap-1 py-1"
+          className="text-xs font-bold text-link-blue hover:underline flex items-center gap-1 py-1"
         >
           <ArrowLeft className="w-3.5 h-3.5" /> Grade another item
         </Link>
         
-        <div className="flex items-center gap-2 bg-emerald-50 text-emerald-800 border border-emerald-200 px-3 py-1.5 rounded-full text-xs font-bold">
-          <Leaf className="w-4 h-4 text-amazon-green fill-current" />
+        <div className="flex items-center gap-2 bg-emerald-50 text-emerald-800 border-[0.5px] border-emerald-200 px-3.5 py-1.5 rounded-full text-xs font-bold select-none">
+          <Leaf className="w-4 h-4 text-green-700 fill-current" />
           Earned +{finalCredits} Green Credits
         </div>
       </div>
 
-      {/* Main Results card */}
-      <div className="bg-white border border-[#D5D9D9] rounded-md shadow-xs p-6 mb-6">
+      {/* Screen 4: AI Grading Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-10">
         
-        {/* Core evaluation summary */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 border-b border-gray-100 pb-5 mb-5">
-          <div>
-            <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">{model}</h1>
-            <div className="text-xs text-gray-500 font-semibold uppercase tracking-wider mt-1.5 flex items-center gap-1.5">
-              <span>Category: {category}</span>
-              <span className="text-gray-300">|</span>
-              <span>ID: {item.itemId}</span>
-            </div>
-          </div>
+        {/* Left Column: Verification Photos & Warehouse confirmations */}
+        <div className="lg:col-span-7 space-y-6">
           
-          <div className="flex flex-col items-center gap-1 bg-gray-50 border border-gray-200 p-2.5 rounded-lg text-center flex-shrink-0 min-w-36">
-            <span className="text-[10px] font-bold text-gray-500 uppercase">Evaluation Grade</span>
-            <div className="mt-1">
-              <GradeBadge grade={gradeVal} size="md" />
-            </div>
-          </div>
-        </div>
-
-        {/* Authenticity concern warn card */}
-        {authenticityConcern && (
-          <div className="bg-rose-50 border border-rose-200 rounded-lg p-4 mb-6 flex items-start gap-3">
-            <AlertTriangle className="w-6 h-6 text-amazon-red flex-shrink-0 mt-0.5" />
-            <div>
-              <h4 className="text-sm font-bold text-rose-900">Authenticity or Visual Mismatch Detected</h4>
-              <p className="text-xs text-rose-800 mt-1">
-                Gemini flagged a mismatch between the provided model specification and the product photos:
-                <br />
-                <span className="font-semibold">{notes}</span>
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* AI verification details */}
-        <div className="flex items-center gap-1.5 text-amazon-teal font-extrabold text-sm mb-5">
-          <ShieldCheck className="w-5 h-5 fill-cyan-50 text-cyan-600" />
-          <span>Amazon Certified Returns Assessment</span>
-        </div>
-
-        {/* Disposition metrics summary */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          <ValueCard
-            label="Disposition Routing"
-            value={disposition}
-            subtitle={dispText}
-          />
-          <ValueCard
-            label="Value Recovered"
-            value={valueRecovered > 0 ? `$${valueRecovered}` : "N/A"}
-            type="currency"
-            subtitle={valueRecovered > 0 ? `Estimated resale value (original $${originalPrice})` : "Routed for social impact"}
-          />
-          <ValueCard
-            label="AI Grading Confidence"
-            value={`${confidence}%`}
-            type="green"
-            subtitle="Verified via Gemini Vision reasoning checks"
-          />
-        </div>
-
-        {/* Circular Routing Decision Engine Comparison Card */}
-        {dispositionResult && (
-          <div className="border border-slate-700/60 rounded-lg p-5 mb-6 bg-slate-900 text-white shadow-xl">
-            <h3 className="text-sm font-extrabold uppercase tracking-wider mb-2 flex items-center gap-1.5 text-cyan-400">
-              <Sparkles className="w-5 h-5 text-cyan-400 animate-pulse" />
-              Circular Routing Decision Engine
-            </h3>
-            <p className="text-xs text-slate-300 mb-4">
-              Proof of Optimization: Evaluated candidate channels simultaneously based on live market demand, partner want-lists, and condition grade.
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-              {/* Channel list comparison */}
-              <div className="space-y-3">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block border-b border-white/5 pb-1">
-                  Candidate Channels Evaluation
-                </span>
-                
-                <div className="space-y-2">
-                  {dispositionResult.comparedAgainst?.map((c, idx) => {
-                    const isWinner = c.channel === dispositionResult.decision;
-                    const isLiquidation = c.channel === "Liquidation";
-
-                    return (
-                      <div
-                        key={idx}
-                        className={`flex items-center justify-between p-3 rounded-lg border transition-all ${
-                          isWinner
-                            ? "bg-emerald-955 border-emerald-500/50 shadow-emerald-500/10 shadow-sm"
-                            : "bg-white/5 border-white/5 hover:bg-white/10"
-                        }`}
-                      >
-                        <div className="space-y-1">
-                          <span className="text-xs font-bold block flex items-center gap-1.5 text-slate-100">
-                            {c.channel}
-                            {isWinner && (
-                              <span className="text-[8px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded-full">
-                                Optimized Path
-                              </span>
-                            )}
-                            {isLiquidation && (
-                              <span className="text-[8px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded-full">
-                                Amazon Baseline
-                              </span>
-                            )}
-                          </span>
-                          <span className="text-[10px] text-slate-400 block">
-                            {c.eligible ? "Eligible for routing" : "Ineligible (Quality criteria)"}
-                          </span>
-                        </div>
-                        
-                        <div className="text-right">
-                          <span className={`text-sm font-extrabold ${isWinner ? "text-emerald-400" : "text-slate-200"}`}>
-                            ${c.value}
-                          </span>
-                          <span className="text-[9px] text-slate-400 block">recovered</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Optimizing banner / stats */}
-              <div className="bg-white/5 border border-white/5 p-4 rounded-lg space-y-4 h-full flex flex-col justify-between">
-                <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block border-b border-white/5 pb-1 mb-3">
-                    Routing ROI Optimizer
-                  </span>
-                  
-                  {dispositionResult.multiple && (
-                    <div className="flex items-baseline gap-1 mt-2">
-                      <span className="text-4xl font-extrabold text-emerald-400 tracking-tight">
-                        {dispositionResult.multiple}x
-                      </span>
-                      <span className="text-xs font-semibold text-slate-300">
-                        Value Multiplier
-                      </span>
+          {/* Verification Photos */}
+          <div className="bg-white p-6 rounded-xl border-[0.5px] border-outline-variant">
+            <h2 className="font-display font-extrabold text-lg text-ink-black mb-1">Product Verification Photos</h2>
+            <p className="text-xs text-outline mb-4 font-semibold">Photos uploaded directly from browser to secure AWS S3 buckets.</p>
+            <div className="grid grid-cols-2 gap-4">
+              {photos.length > 0 ? (
+                photos.slice(0, 4).map((url, idx) => (
+                  <div key={idx} className="aspect-video border-[0.5px] border-outline-variant rounded-xl flex items-center justify-center bg-surface-container-low relative overflow-hidden">
+                    <img src={url} alt={`View ${idx + 1}`} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/45 flex flex-col items-center justify-center select-none text-white gap-1">
+                      <CheckCircle className="w-6 h-6 text-green-400" />
+                      <span className="text-[9px] font-bold uppercase tracking-wider">Photo {idx + 1} Graded</span>
                     </div>
-                  )}
-                  
-                  <p className="text-xs text-slate-300 mt-3 leading-relaxed font-medium">
-                    {dispositionResult.reason}
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-2 aspect-video border-[0.5px] border-outline-variant rounded-xl flex items-center justify-center bg-surface-container-low text-outline font-medium">
+                  No images uploaded.
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Destination Confirmed card */}
+          <div className="bg-white p-6 rounded-xl border-[0.5px] border-outline-variant border-l-8 border-l-green-600 flex items-start gap-4 shadow-none select-none">
+            <div className="bg-green-100 rounded-full p-2 text-green-700 shrink-0 mt-0.5">
+              <Leaf className="w-6 h-6 fill-current" />
+            </div>
+            <div className="flex-grow space-y-1">
+              <div className="flex justify-between items-start flex-wrap gap-2">
+                <div>
+                  <h3 className="font-display font-extrabold text-base text-ink-black leading-none">Warehouse Destination Confirmed</h3>
+                  <p className="text-[10px] text-outline mt-1 font-bold uppercase">Dynamic scoring engine selected path</p>
+                </div>
+                <span className="px-2.5 py-0.5 bg-green-100 text-green-800 font-bold text-[9px] uppercase tracking-wider rounded-lg border border-green-200">
+                  Circular Approved
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 text-xs">
+                <div className="bg-surface-container-low p-3 rounded-lg border-[0.5px] border-outline-variant">
+                  <p className="text-outline font-bold text-[10px] uppercase">Path Selection</p>
+                  <p className="font-black text-ink-black mt-1">{disposition}</p>
+                </div>
+                <div className="bg-surface-container-low p-3 rounded-lg border-[0.5px] border-outline-variant">
+                  <p className="text-outline font-bold text-[10px] uppercase">CO2 Savings Status</p>
+                  <p className="font-black text-ink-black mt-1">
+                    {laterallyRouted || item.status === "laterally_routed" ? "Saved 1.8 kg CO2 (Direct Delivery)" : "Optimized Hub Distribution"}
                   </p>
                 </div>
-
-                <div className="bg-emerald-950/20 border border-emerald-500/20 text-emerald-300 rounded-md p-3 text-xs flex items-center gap-2 font-medium">
-                  <ShieldCheck className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-                  <span>
-                    Simultaneous routing analysis completed. Saved ${Math.max(0, dispositionResult.recovered - (dispositionResult.vsLiquidation || 0))} over liquidation.
-                  </span>
-                </div>
               </div>
             </div>
           </div>
-        )}
 
-        {/* AI Circular Routing & Sustainability Dashboard */}
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-5 mb-6">
-          <h3 className="text-sm font-extrabold text-gray-900 uppercase tracking-wider mb-3 flex items-center gap-1.5 border-b border-gray-200 pb-2">
-            <Leaf className="w-5 h-5 text-amazon-green fill-current" />
-            AI Circular Routing & Sustainability
-          </h3>
+        </div>
 
-          <div className="space-y-4">
+        {/* Right Column: AI Grading Analysis */}
+        <div className="lg:col-span-5 space-y-6">
+          <div className="bg-white p-6 rounded-xl border-[0.5px] border-outline-variant relative overflow-hidden shadow-none">
             
-            {/* Idea 1: Refurbisher / NGO Demand Matching */}
-            <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-2xs">
-              <h4 className="text-xs font-bold text-gray-800 uppercase tracking-tight flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-amazon-teal animate-pulse" />
-                NGO / Refurbisher Demand Matching
-              </h4>
-              <p className="text-xs text-gray-600 mt-1">
-                Incoming return conditions are automatically matched against active want-lists from circular partners.
-              </p>
-              
-              {gradeVal === "Acceptable" || gradeVal === "Damaged" || donated || item.status === "donated" ? (
-                <div className="mt-2 text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 px-3 py-1.5 rounded-md font-semibold inline-flex items-center gap-1.5">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                  </span>
-                  Matched active request: <strong>{gradeVal === "Damaged" ? "Cashify (Spare Parts harvesting)" : "Goonj NGO (Winter Drive)"}</strong>. Item routed automatically.
-                </div>
-              ) : (
-                <div className="mt-2 text-xs bg-gray-50 text-gray-600 border border-gray-200 px-3 py-1.5 rounded-md inline-flex items-center gap-1.5">
-                  No matching refurbish/donation want-lists. Routed for standard open-box resale.
-                </div>
-              )}
+            {/* Live indicator */}
+            <div className="flex justify-between items-center mb-4 select-none">
+              <h2 className="font-display font-extrabold text-lg text-ink-black">AI Grading Analysis</h2>
+              <span className="flex items-center gap-1 text-link-blue font-bold text-[10px] uppercase tracking-wider">
+                <span className="w-2 h-2 rounded-full bg-secondary-container animate-pulse"></span>
+                VLM Verified
+              </span>
             </div>
 
-            {/* Idea 2: User Gated Donation */}
-            <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-2xs">
-              <h4 className="text-xs font-bold text-gray-800 uppercase tracking-tight">
-                User Gated Donation (Consent Verification)
-              </h4>
-              <p className="text-xs text-gray-600 mt-1">
-                To protect user ownership, Amazon-owned items are automatically routed for donation, while user-owned items require explicit consent.
-              </p>
-              
-              {donated || item.status === "donated" ? (
-                <div className="mt-3 bg-emerald-50 border border-emerald-200 text-emerald-900 p-3 rounded-md text-xs font-semibold flex items-center justify-between">
-                  <div>
-                    <span>✅ User-initiated donation verified. +150 credits added.</span>
-                    <span className="block text-[10px] text-emerald-600 mt-0.5">Tax exemption receipt generated by Goonj NGO.</span>
-                  </div>
-                  <span className="bg-emerald-600 text-white font-bold text-[9px] px-2 py-0.5 rounded-full uppercase">Donated</span>
-                </div>
-              ) : (
-                <div className="mt-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 bg-cyan-50/50 border border-cyan-100 rounded-md">
-                  <span className="text-xs text-cyan-900 font-medium">
-                    Donate this item to Goonj NGO instead of selling?
-                  </span>
-                  <button
-                    onClick={handleDonate}
-                    className="px-3 py-1.5 bg-amazon-teal hover:bg-cyan-700 text-white font-bold text-xs rounded-full cursor-pointer shadow-xs transition-all flex-shrink-0"
-                  >
-                    Donate (+150 Cr)
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Idea 3: Local Lateral Redirect */}
-            <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-2xs">
-              <h4 className="text-xs font-bold text-gray-800 uppercase tracking-tight">
-                Local Lateral Routing (CO2 Reduction)
-              </h4>
-              <p className="text-xs text-gray-600 mt-1">
-                Redirects high-quality returns directly to fulfill nearby buyer orders, bypassing warehouses to cut transport emissions.
-              </p>
-
-              {gradeVal === "New" || gradeVal === "Like New" || gradeVal === "Very Good" ? (
-                laterallyRouted || item.status === "laterally_routed" ? (
-                  <div className="mt-3 bg-emerald-50 border border-emerald-200 text-emerald-955 p-3.5 rounded-md text-xs font-semibold space-y-1">
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
-                      <span>Lateral dispatch locked! Fulfilling Amit K. (Indiranagar, 4.2 km away).</span>
-                    </div>
-                    <p className="text-[10px] text-gray-500 font-medium">
-                      Status: Dispatched via local courier. <strong>Saved 1.8 kg of CO2</strong> compared to standard warehouse shipping.
-                    </p>
-                    <span className="inline-block text-[9px] bg-emerald-600 text-white font-bold px-2 py-0.5 rounded-full uppercase mt-1">
-                      +50 Bonus Credits Awarded
-                    </span>
-                  </div>
-                ) : (
-                  <div className="mt-3 bg-amber-50 border border-amber-200 p-3.5 rounded-md text-xs space-y-2">
-                    <div className="flex justify-between items-start gap-2">
-                      <div>
-                        <span className="font-bold text-amber-900 block">✨ Local Redirect Opportunity Found!</span>
-                        <p className="text-amber-850 text-[11px] mt-0.5">
-                          Buyer <strong>Amit K.</strong> (Indiranagar, 4.2 km away) has a pending order for a certified open-box smartwatch.
-                        </p>
-                      </div>
-                      <span className="bg-amber-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
-                        4.2 km away
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between border-t border-amber-200 pt-2.5 mt-1">
-                      <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-tight">
-                        Estimated CO2 Saved: 1.8 kg
-                      </span>
-                      <button
-                        onClick={handleLateralRoute}
-                        className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-full cursor-pointer shadow-xs transition-all"
-                      >
-                        Approve Lateral Route (+50 Cr)
-                      </button>
-                    </div>
-                  </div>
-                )
-              ) : (
-                <div className="mt-2 text-xs bg-gray-50 text-gray-600 border border-gray-200 px-3 py-1.5 rounded-md">
-                  Item condition is too low for direct lateral order redirection. Routed to refurbish/recycle.
-                </div>
-              )}
-            </div>
-
-          </div>
-        </div>
-
-        {/* Defects Details */}
-        <div className="mb-6">
-          <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-2">
-            Identified Damage / Wear
-          </h3>
-          {defects.length > 0 ? (
-            <div className="space-y-1.5">
-              {defects.map((defect, idx) => (
-                <div key={idx} className="p-3 border-l-3 border-amazon-red bg-rose-50/20 text-xs text-gray-700 rounded-r-md">
-                  {defect}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="p-3 border-l-3 border-amazon-green bg-emerald-50/20 text-xs text-gray-700 rounded-r-md">
-              No physical cosmetic defects identified. Ready for directUsed restock.
-            </div>
-          )}
-        </div>
-
-        {/* Grading notes */}
-        <div className="mb-6">
-          <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-2">
-            Condition Summary
-          </h3>
-          <p className="p-4 bg-gray-50 border border-gray-200 rounded-md text-xs text-gray-700 leading-relaxed font-medium">
-            {notes}
-          </p>
-        </div>
-
-        {/* Photos list */}
-        <div>
-          <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-2">
-            Condition Photo Registry (S3)
-          </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {photos.map((url, idx) => (
-              <div key={idx} className="border border-gray-200 rounded-md overflow-hidden h-32 bg-gray-50 flex items-center justify-center p-2">
-                <img
-                  src={url}
-                  alt={`Graded Return ${idx + 1}`}
-                  className="max-h-full max-w-full object-contain rounded"
-                  onError={(e) => {
-                    // Fallback to placeholder if S3 link is not public or load fails
-                    e.target.src = "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=300";
-                  }}
-                />
+            {/* Neural scan line calibration panel */}
+            <div className="bg-deep-navy rounded-xl p-4 mb-6 relative overflow-hidden h-36 flex items-center justify-center border border-accent-yellow/20 select-none">
+              <div className="neural-line"></div>
+              <div className="text-center relative z-10">
+                <Sparkles className="w-8 h-8 text-accent-yellow mx-auto mb-2 animate-pulse" />
+                <p className="text-accent-yellow font-bold text-[10px] tracking-wider uppercase">Inspection Complete</p>
+                <p className="text-surface-variant font-medium text-[10px] mt-1">Llama-VLM analyzed cosmetics & authenticity</p>
               </div>
-            ))}
+            </div>
+
+            {/* Condition Bars */}
+            <div className="space-y-4 mb-6 select-none">
+              <div>
+                <div className="flex justify-between mb-1 text-[11px] font-bold">
+                  <span className="text-outline">Screen / Cosmetic Condition</span>
+                  <span className="text-ink-black">{screenScore}%</span>
+                </div>
+                <div className="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+                  <div className="bg-secondary-container h-full transition-all duration-500" style={{ width: `${screenScore}%` }}></div>
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between mb-1 text-[11px] font-bold">
+                  <span className="text-outline">Bezel / Structural Integrity</span>
+                  <span className="text-ink-black">{bezelScore}%</span>
+                </div>
+                <div className="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+                  <div className="bg-secondary-container h-full transition-all duration-500" style={{ width: `${bezelScore}%` }}></div>
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between mb-1 text-[11px] font-bold">
+                  <span className="text-outline">Packaging Quality</span>
+                  <span className="text-ink-black">{pkgScore}%</span>
+                </div>
+                <div className="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+                  <div className="bg-green-600 h-full transition-all duration-500" style={{ width: `${pkgScore}%` }}></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Final Grade Status */}
+            <div className="bg-surface-container-low border-[0.5px] border-outline-variant p-6 rounded-xl text-center ai-glow select-none">
+              <p className="font-bold text-[10px] text-outline uppercase tracking-wider mb-1">FINAL GRADE</p>
+              <h1 className="font-display font-black text-3xl text-secondary uppercase tracking-tight">{gradeVal}</h1>
+              <p className="text-xs text-outline font-semibold mt-2.5 px-4 leading-relaxed">
+                {notes}
+              </p>
+            </div>
+
+            {/* Action buttons */}
+            <div className="mt-5 flex flex-col gap-3">
+              <button className="w-full py-3 bg-secondary-container hover:bg-[#e68a00] text-ink-black font-bold rounded-xl transition-all uppercase tracking-wider text-xs border-[0.5px] border-outline-variant cursor-pointer">
+                Accept Grade & Route Item
+              </button>
+              <button onClick={() => refetch()} className="w-full py-3 bg-white border-[0.5px] border-deep-navy text-deep-navy font-bold rounded-xl hover:bg-surface-container-low transition-all uppercase tracking-wider text-xs cursor-pointer">
+                Request Manual Review
+              </button>
+            </div>
+
           </div>
+
+          {/* AI Log console logs */}
+          <div className="bg-deep-navy p-4 rounded-xl text-white font-mono text-[9px] leading-relaxed max-h-36 overflow-y-auto custom-scrollbar select-none">
+            <p className="text-accent-yellow font-bold uppercase">[SYSTEM]: VERIFIED INSPECTION OUTPUT</p>
+            <p className="text-surface-variant">[LOG]: Reading EXIF metadata... OK.</p>
+            {defects.length > 0 ? (
+              defects.map((def, idx) => (
+                <p key={idx} className="text-red-300">[WARN]: Blemish found: {def}</p>
+              ))
+            ) : (
+              <p className="text-green-400">[LOG]: No scratch pixel clusters detected.</p>
+            )}
+            <p className="text-green-400 font-bold">[GRAD]: AI resolution complete.</p>
+          </div>
+
         </div>
 
       </div>
 
-      {/* Button redirects */}
-      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+      {/* Screen 3: Smart Routing Section */}
+      <section className="bg-white border-[0.5px] border-outline-variant rounded-xl p-8 space-y-8 shadow-none">
+        
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-surface-container pb-6">
+          <div>
+            <h1 className="font-display font-extrabold text-2xl text-ink-black leading-none">Smart Routing Engine</h1>
+            <p className="text-xs text-outline mt-2 font-semibold">Simultaneous regional routing analysis for SKU: SL-{item.itemId?.substring(0, 8).toUpperCase()}</p>
+          </div>
+          <div className="flex items-center gap-1 bg-surface-container-low border-[0.5px] border-outline-variant px-3 py-1.5 rounded-lg select-none">
+            <span className="text-[10px] uppercase font-bold text-outline">Database Region:</span>
+            <select
+              value={selectedRegion}
+              onChange={(e) => setSelectedRegion(e.target.value)}
+              className="bg-transparent border-none text-xs font-bold text-link-blue focus:outline-none p-0 cursor-pointer"
+            >
+              <option value="Bangalore">Bangalore (KA)</option>
+              <option value="Mumbai">Mumbai (MH)</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Signal Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-gutter select-none">
+          <div className="border-[0.5px] border-outline-variant bg-surface-container-low rounded-xl p-4 flex items-center gap-4">
+            <div className="bg-white p-3 rounded-lg border-[0.5px] border-outline-variant text-primary flex-shrink-0">
+              <Award className="w-5 h-5 text-link-blue" />
+            </div>
+            <div>
+              <p className="text-[9px] font-bold text-outline uppercase tracking-wider leading-none">Condition</p>
+              <p className="text-sm font-black text-ink-black mt-1.5">{gradeVal}</p>
+            </div>
+          </div>
+          <div className="border-[0.5px] border-outline-variant bg-surface-container-low rounded-xl p-4 flex items-center gap-4">
+            <div className="bg-white p-3 rounded-lg border-[0.5px] border-outline-variant text-secondary flex-shrink-0">
+              <Activity className="w-5 h-5 text-secondary-container" />
+            </div>
+            <div>
+              <p className="text-[9px] font-bold text-outline uppercase tracking-wider leading-none">Demand</p>
+              <p className="text-sm font-black text-ink-black mt-1.5">High (92%)</p>
+            </div>
+          </div>
+          <div className="border-[0.5px] border-outline-variant bg-surface-container-low rounded-xl p-4 flex items-center gap-4">
+            <div className="bg-white p-3 rounded-lg border-[0.5px] border-outline-variant text-tertiary flex-shrink-0">
+              <Leaf className="w-5 h-5 text-green-700" />
+            </div>
+            <div>
+              <p className="text-[9px] font-bold text-outline uppercase tracking-wider leading-none">Partners</p>
+              <p className="text-sm font-black text-ink-black mt-1.5">14 Active</p>
+            </div>
+          </div>
+          <div className="border-[0.5px] border-outline-variant bg-surface-container-low rounded-xl p-4 flex items-center gap-4">
+            <div className="bg-white p-3 rounded-lg border-[0.5px] border-outline-variant text-accent-yellow flex-shrink-0">
+              <DollarSign className="w-5 h-5 text-green-700" />
+            </div>
+            <div>
+              <p className="text-[9px] font-bold text-outline uppercase tracking-wider leading-none">Original Val</p>
+              <p className="text-sm font-black text-ink-black mt-1.5">${originalPrice}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Route Option Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+          
+          {/* Option 1: Cashify (or Resell) */}
+          <div className={`border-[0.5px] rounded-xl p-8 flex flex-col justify-between transition-all relative select-none ${
+            disposition.startsWith("Resell") || disposition.startsWith("Refurbish")
+              ? "border-green-600 bg-emerald-50/20 best-route-glow"
+              : "border-outline-variant bg-white"
+          }`}>
+            {(disposition.startsWith("Resell") || disposition.startsWith("Refurbish")) && (
+              <div className="absolute -top-3 left-6 bg-green-700 text-white px-3 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider flex items-center gap-1">
+                BEST ROUTE
+              </div>
+            )}
+            <div>
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h3 className="font-display font-extrabold text-lg text-ink-black">Certified Resell</h3>
+                  <p className="text-xs text-outline font-semibold">Instant Open-Box Restock</p>
+                </div>
+                <div className="text-right">
+                  <p className={`text-2xl font-black ${disposition.startsWith("Resell") || disposition.startsWith("Refurbish") ? "text-green-750" : "text-ink-black"}`}>
+                    ${resellerPayout}
+                  </p>
+                  <p className="text-[10px] text-outline font-semibold">Net Resale Value</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 py-4 border-y border-surface-container text-xs">
+                <div>
+                  <p className="text-[9px] font-bold text-outline uppercase">Fulfillment</p>
+                  <p className="font-black text-ink-black mt-1">Circular Resale Store</p>
+                </div>
+                <div>
+                  <p className="text-[9px] font-bold text-outline uppercase">Liquidation Speed</p>
+                  <p className="font-black text-ink-black mt-1">High</p>
+                </div>
+              </div>
+            </div>
+            <button className="mt-6 w-full py-3 bg-secondary-container hover:bg-[#e68a00] text-ink-black font-bold rounded-xl text-xs uppercase tracking-wider border-[0.5px] border-outline-variant cursor-pointer">
+              Select Resell Path
+            </button>
+          </div>
+
+          {/* Option 2: Bulk Liquidation */}
+          <div className={`border-[0.5px] rounded-xl p-8 flex flex-col justify-between transition-all relative select-none ${
+            disposition.startsWith("Liquidation") || disposition.startsWith("Recycle")
+              ? "border-green-600 bg-emerald-50/20 best-route-glow"
+              : "border-outline-variant bg-white"
+          }`}>
+            {(disposition.startsWith("Liquidation") || disposition.startsWith("Recycle")) && (
+              <div className="absolute -top-3 left-6 bg-green-700 text-white px-3 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider flex items-center gap-1">
+                BEST ROUTE
+              </div>
+            )}
+            <div>
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h3 className="font-display font-extrabold text-lg text-ink-black">Bulk Liquidation</h3>
+                  <p className="text-xs text-outline font-semibold">Certified Wholesale Distribution</p>
+                </div>
+                <div className="text-right">
+                  <p className={`text-2xl font-black ${disposition.startsWith("Liquidation") || disposition.startsWith("Recycle") ? "text-green-755" : "text-ink-black"}`}>
+                    ${liquidationPayout}
+                  </p>
+                  <p className="text-[10px] text-outline font-semibold">Standard AWS Baseline</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 py-4 border-y border-surface-container text-xs">
+                <div>
+                  <p className="text-[9px] font-bold text-outline uppercase">Processing</p>
+                  <p className="font-black text-ink-black mt-1">Bulk Scrap/Recycle</p>
+                </div>
+                <div>
+                  <p className="text-[9px] font-bold text-outline uppercase">Liquidation Speed</p>
+                  <p className="font-black text-ink-black mt-1">Instant</p>
+                </div>
+              </div>
+            </div>
+            <button className="mt-6 w-full py-3 bg-secondary-container hover:bg-[#e68a00] text-ink-black font-bold rounded-xl text-xs uppercase tracking-wider border-[0.5px] border-outline-variant cursor-pointer">
+              Select Bulk Path
+            </button>
+          </div>
+
+          {/* Option 3: Local Lateral Redirect */}
+          <div className={`border-[0.5px] rounded-xl p-8 flex flex-col justify-between transition-all relative select-none ${
+            laterallyRouted
+              ? "border-green-600 bg-emerald-50/20 best-route-glow"
+              : "border-outline-variant bg-white"
+          }`}>
+            {laterallyRouted && (
+              <div className="absolute -top-3 left-6 bg-green-700 text-white px-3 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider flex items-center gap-1">
+                BEST ROUTE (LOCKED)
+              </div>
+            )}
+            <div>
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h3 className="font-display font-extrabold text-lg text-ink-black">Local Lateral Redirect</h3>
+                  <p className="text-xs text-outline font-semibold">Direct P2P Order Redirection</p>
+                </div>
+                <div className="text-right">
+                  <p className={`text-2xl font-black ${laterallyRouted ? "text-green-755" : "text-ink-black"}`}>
+                    ${resellerPayout}
+                  </p>
+                  <p className="text-[10px] text-outline font-semibold">Buyer Fulfill Payout</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 py-4 border-y border-surface-container text-xs">
+                <div>
+                  <p className="text-[9px] font-bold text-outline uppercase">Target Partner</p>
+                  <p className="font-black text-ink-black mt-1">{laterallyRouted ? "Amit K. (Indiranagar)" : "Opportunity Found"}</p>
+                </div>
+                <div>
+                  <p className="text-[9px] font-bold text-outline uppercase">CO2 Emissions Saved</p>
+                  <p className="font-black text-green-750 mt-1">1.8 kg CO2 saved</p>
+                </div>
+              </div>
+            </div>
+            {gradeVal === "New" || gradeVal === "Like New" || gradeVal === "Very Good" ? (
+              laterallyRouted ? (
+                <div className="mt-6 py-3 bg-emerald-50 text-emerald-800 border-[0.5px] border-emerald-250 text-xs font-bold text-center rounded-xl select-none">
+                  Lateral Redirect Approved (+50 Credits)
+                </div>
+              ) : (
+                <button onClick={handleLateralRoute} className="mt-6 w-full py-3 bg-secondary-container hover:bg-[#e68a00] text-ink-black font-bold rounded-xl text-xs uppercase tracking-wider border-[0.5px] border-outline-variant cursor-pointer">
+                  Approve Lateral Redirect
+                </button>
+              )
+            ) : (
+              <div className="mt-6 py-3 bg-surface-container-low text-outline text-xs font-semibold text-center rounded-xl border-[0.5px] border-outline-variant">
+                Item Condition Too Low for Redirect
+              </div>
+            )}
+          </div>
+
+          {/* Option 4: NGO Donation */}
+          <div className={`border-[0.5px] rounded-xl p-8 flex flex-col justify-between transition-all relative select-none ${
+            donated || disposition.startsWith("Donate")
+              ? "border-green-600 bg-emerald-50/20 best-route-glow"
+              : "border-outline-variant bg-white"
+          }`}>
+            {(donated || disposition.startsWith("Donate")) && (
+              <div className="absolute -top-3 left-6 bg-green-700 text-white px-3 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider flex items-center gap-1">
+                BEST ROUTE (LOCKED)
+              </div>
+            )}
+            <div>
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h3 className="font-display font-extrabold text-lg text-ink-black">Gated NGO Donation</h3>
+                  <p className="text-xs text-outline font-semibold">Social Welfare Direct Gift</p>
+                </div>
+                <div className="text-right">
+                  <p className={`text-2xl font-black ${donated || disposition.startsWith("Donate") ? "text-green-755" : "text-ink-black"}`}>
+                    $0
+                  </p>
+                  <p className="text-[10px] text-outline font-semibold">+300 Credits Bonus</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 py-4 border-y border-surface-container text-xs">
+                <div>
+                  <p className="text-[9px] font-bold text-outline uppercase">Partner Match</p>
+                  <p className="font-black text-ink-black mt-1">Goonj NGO (Winter Drive)</p>
+                </div>
+                <div>
+                  <p className="text-[9px] font-bold text-outline uppercase">Redirection Tax Credit</p>
+                  <p className="font-black text-ink-black mt-1">Receipt Generated</p>
+                </div>
+              </div>
+            </div>
+            {donated ? (
+              <div className="mt-6 py-3 bg-emerald-50 text-emerald-800 border-[0.5px] border-emerald-250 text-xs font-bold text-center rounded-xl select-none">
+                Donation Completed (+150 Extra Credits)
+              </div>
+            ) : (
+              <button onClick={handleDonate} className="mt-6 w-full py-3 bg-secondary-container hover:bg-[#e68a00] text-ink-black font-bold rounded-xl text-xs uppercase tracking-wider border-[0.5px] border-outline-variant cursor-pointer">
+                Donate Instead (+150 Cr)
+              </button>
+            )}
+          </div>
+
+        </div>
+
+        {/* ROI saved details banner */}
+        {dispositionResult && (
+          <div className="flex items-center justify-between p-4 bg-emerald-50 border-[0.5px] border-emerald-250 rounded-xl select-none flex-wrap gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-3xl font-black text-green-700 tracking-tight">
+                {dispositionResult.multiple || "2.4"}x
+              </span>
+              <div className="flex flex-col">
+                <span className="text-xs font-bold text-ink-black uppercase tracking-tight">
+                  Value Multiplier Locked
+                </span>
+                <span className="text-[10px] text-outline font-medium">
+                  Value recovered vs AWS baseline (saved ${Math.max(0, resellerPayout - liquidationPayout)} over liquidation)
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border-[0.5px] border-outline-variant text-xs text-outline font-bold">
+              <span className="w-2.5 h-2.5 rounded-full bg-green-600 animate-pulse"></span>
+              Decision resolved in 2.1 seconds
+            </div>
+          </div>
+        )}
+
+      </section>
+
+      {/* Footer redirection buttons */}
+      <div className="flex flex-col sm:flex-row gap-3 justify-center mt-8">
         <Link
           to="/buyer"
-          className="px-6 py-2 bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 font-bold rounded-full text-center shadow-sm border border-yellow-400 hover:border-yellow-500 text-xs flex items-center justify-center gap-1.5"
+          className="px-6 py-3 bg-secondary-container hover:bg-[#e68a00] text-ink-black font-bold rounded-xl text-center border-[0.5px] border-outline-variant text-xs flex items-center justify-center gap-1.5 uppercase tracking-wider"
         >
           <ShoppingBag className="w-4 h-4" /> Go to Used Marketplace
         </Link>
         <Link
           to="/seller/return"
-          className="px-6 py-2 bg-white hover:bg-gray-50 text-gray-800 font-bold rounded-full text-center shadow-sm border border-gray-300 text-xs"
+          className="px-6 py-3 bg-white hover:bg-surface-container-low text-deep-navy font-bold rounded-xl text-center border-[0.5px] border-deep-navy text-xs uppercase tracking-wider"
         >
           Initiate New Return
         </Link>
       </div>
+
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { Check } from "lucide-react";
 
 export default function Stepper({ steps, currentStep }) {
   return (
-    <div className="flex items-center w-full justify-between max-w-lg mx-auto mb-8 font-sans">
+    <div className="flex items-center w-full justify-between max-w-lg mx-auto mb-8 font-sans select-none">
       {steps.map((step, idx) => {
         const isCompleted = idx < currentStep;
         const isActive = idx === currentStep;
@@ -16,17 +16,17 @@ export default function Stepper({ steps, currentStep }) {
               <div
                 className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm border-2 transition-all ${
                   isCompleted
-                    ? "bg-amazon-green border-amazon-green text-white"
+                    ? "bg-green-600 border-green-600 text-white"
                     : isActive
-                    ? "bg-white border-amazon-navy text-amazon-navy ring-4 ring-blue-50"
-                    : "bg-white border-gray-300 text-gray-400"
+                    ? "bg-white border-primary-container text-primary-container ring-4 ring-blue-50/50"
+                    : "bg-white border-outline-variant text-outline"
                 }`}
               >
                 {isCompleted ? <Check className="w-5 h-5 stroke-[3]" /> : idx + 1}
               </div>
               <span
-                className={`text-xs mt-2 font-semibold whitespace-nowrap absolute top-10 ${
-                  isActive ? "text-gray-900 font-bold" : "text-gray-500"
+                className={`text-[10px] mt-2 font-bold uppercase tracking-wider absolute top-10 ${
+                  isActive ? "text-ink-black" : "text-outline"
                 }`}
               >
                 {step}
@@ -37,7 +37,7 @@ export default function Stepper({ steps, currentStep }) {
             {idx < steps.length - 1 && (
               <div
                 className={`flex-grow h-0.5 mx-2 transition-all ${
-                  idx < currentStep ? "bg-amazon-green" : "bg-gray-300"
+                  idx < currentStep ? "bg-green-600" : "bg-outline-variant"
                 }`}
               ></div>
             )}

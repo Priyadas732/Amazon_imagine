@@ -1,66 +1,107 @@
 // src/controllers/grade.controller.js
+//
+// Grading Pipeline:
+//   1. Download uploaded photos from S3
+//   2. Send to Groq Vision (meta-llama/llama-4-scout-17b-16e-instruct) → conditionVector
+//   3. Map conditionVector → legacy grade shape (for DynamoDB + frontend)
+//   4. Run Max-Utility routing engine → disposition decision
+//   5. Persist full record to DynamoDB
+//
 import { randomUUID } from "node:crypto";
 import * as s3Service from "../services/s3.service.js";
 import * as dynamoService from "../services/dynamo.service.js";
-import * as geminiService from "../services/gemini.service.js";
+import {
+  gradeFromBuffers,
+  computeMaxUtilityRoute,
+  getRequirements
+} from "../services/groqVision.service.js";
 import { routeItem } from "../services/routeItem.js";
 import { S3_BUCKET_NAME } from "../../config/setting.js";
 
 /**
  * Controller to handle returned product grading using pre-uploaded S3 keys.
+ * Replaces the Gemini pipeline with the Groq Vision + Max-Utility engine.
  */
 export async function gradeItem(req, res, next) {
   try {
     const { category, productType, imageKeys, provided } = req.body;
-    console.log(`📥 Received POST /grade request for category: "${category}", productType: "${productType}"`);
+    console.log(`📥 Received POST /grade — category: "${category}", productType: "${productType}"`);
 
     const activeCategory = productType || category;
     if (!activeCategory) {
-      console.warn("⚠️ Category/ProductType missing in request");
       return res.status(400).json({ error: "category or productType is required" });
     }
     if (!imageKeys || !Array.isArray(imageKeys) || imageKeys.length === 0) {
-      console.warn("⚠️ No imageKeys provided in request");
       return res.status(400).json({ error: "At least one imageKey is required" });
     }
 
     const payloadProvided = provided || {};
 
-    // 1) Download photos from S3
+    // ── 1. Download photos from S3 ─────────────────────────────────────────
     console.log(`📥 Downloading ${imageKeys.length} photo(s) from S3...`);
     const images = [];
     for (const key of imageKeys) {
       const { buffer, contentType } = await s3Service.downloadBuffer(key);
       images.push({ buffer, mimeType: contentType || "image/jpeg" });
     }
-    console.log(`✅ Downloaded photo(s) from S3 successfully.`);
+    console.log("✅ S3 download complete.");
 
-    // 2) Grade with Gemini 3.5 Flash
-    console.log("🤖 Requesting condition grade from Gemini 3.5 Flash...");
-    const gradeResult = await geminiService.gradeFromBuffers({
+    // ── 2. Groq Vision grading → conditionVector + legacy grade ───────────
+    console.log("🤖 Sending to Groq Vision (meta-llama/llama-4-scout-17b-16e-instruct)...");
+    const gradeResult = await gradeFromBuffers({
       category: activeCategory,
       images,
       provided: payloadProvided,
     });
-    console.log("✅ Gemini evaluation result:", JSON.stringify(gradeResult));
+    console.log("✅ Groq grading result:", JSON.stringify({
+      grade: gradeResult.grade,
+      gradedBy: gradeResult.gradedBy,
+      confidence: gradeResult.confidence
+    }));
 
-    // 3) Extract itemId from first image key if formatted as itemId/filename, otherwise generate a UUID
+    // ── 3. Extract / generate itemId ───────────────────────────────────────
     let itemId = randomUUID();
-    if (imageKeys[0] && imageKeys[0].includes("/")) {
+    if (imageKeys[0]?.includes("/")) {
       itemId = imageKeys[0].split("/")[0];
     }
 
-    // Determine S3 URLs
-    const photos = imageKeys.map((k) => `https://${S3_BUCKET_NAME}.s3.${process.env.AWS_REGION || 'ap-south-1'}.amazonaws.com/${k}`);
+    const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+    const photos = imageKeys.map(
+      (k) => `${backendUrl}/image/${k}`
+    );
 
-    // Calculate disposition routing
-    const originalPrice = payloadProvided.originalPrice || (activeCategory === "electronics" ? 999 : activeCategory === "footwear" ? 120 : activeCategory === "clothing" ? 60 : 250);
-    const dispositionResult = routeItem({
-      productName: payloadProvided.model || activeCategory,
-      grade: gradeResult.grade || "Good",
-      originalPrice
-    });
+    const originalPrice = payloadProvided.originalPrice ||
+      (activeCategory === "electronics" ? 999
+        : activeCategory === "footwear"    ? 120
+        : activeCategory === "clothing"    ?  60
+        : 250);
 
+    // ── 4a. Max-Utility routing (new engine — uses conditionVector) ─────────
+    // The conditionVector is attached by gradeFromBuffers when Groq succeeds.
+    // Falls back to legacy routeItem() if conditionVector is not available.
+    let dispositionResult;
+    if (gradeResult.conditionVector) {
+      dispositionResult = computeMaxUtilityRoute(
+        {
+          category:      activeCategory,
+          region:        payloadProvided.region || "Bangalore",
+          originalPrice,
+          model:         payloadProvided.model || activeCategory
+        },
+        gradeResult.conditionVector
+      );
+    } else {
+      // ── 4b. Legacy routing fallback (grade-string based) ────────────────
+      dispositionResult = routeItem({
+        productName:   payloadProvided.model || activeCategory,
+        category:      activeCategory,
+        grade:         gradeResult.grade || "Good",
+        originalPrice,
+        region:        payloadProvided.region || "Bangalore"
+      });
+    }
+
+    // ── 5. Persist to DynamoDB ─────────────────────────────────────────────
     const item = {
       itemId,
       category: activeCategory,
@@ -72,12 +113,11 @@ export async function gradeItem(req, res, next) {
       createdAt: new Date().toISOString(),
     };
 
-    // 3) Store in DynamoDB
-    console.log("💾 Persisting evaluation record in DynamoDB...");
+    console.log("💾 Persisting to DynamoDB...");
     await dynamoService.saveItem(item);
-    console.log(`✅ Saved return record to DynamoDB (itemId: ${itemId})`);
+    console.log(`✅ Saved to DynamoDB (itemId: ${itemId})`);
 
-    // 4) Return response containing both the item wrapper and the flat grade properties
+    // ── 6. Return response ─────────────────────────────────────────────────
     res.json({
       success: true,
       itemId,
@@ -85,7 +125,8 @@ export async function gradeItem(req, res, next) {
       ...gradeResult,
     });
   } catch (err) {
-    console.error("❌ Error in gradeItem controller:", err);
+    console.error("❌ gradeItem controller error:", err);
     next(err);
   }
 }
+

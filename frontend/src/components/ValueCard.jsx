@@ -7,21 +7,21 @@ export default function ValueCard({ label, value, type = "default", subtitle = "
     switch (type) {
       case "green":
         return {
-          bg: "bg-emerald-50 border-emerald-200",
-          icon: <Leaf className="w-5 h-5 text-amazon-green fill-current" />,
-          color: "text-amazon-green"
+          bg: "bg-emerald-50/50 border-emerald-250",
+          icon: <Leaf className="w-5 h-5 text-green-700 fill-current" />,
+          color: "text-green-700"
         };
       case "currency":
         return {
-          bg: "bg-orange-50 border-orange-200",
-          icon: <DollarSign className="w-5 h-5 text-amazon-red" />,
-          color: "text-amazon-red"
+          bg: "bg-red-50/50 border-red-250",
+          icon: <DollarSign className="w-5 h-5 text-red-700" />,
+          color: "text-red-700"
         };
       default:
         return {
-          bg: "bg-blue-50 border-blue-200",
-          icon: <Award className="w-5 h-5 text-amazon-navy" />,
-          color: "text-amazon-navy"
+          bg: "bg-blue-50/50 border-blue-250",
+          icon: <Award className="w-5 h-5 text-link-blue" />,
+          color: "text-link-blue"
         };
     }
   };
@@ -29,19 +29,19 @@ export default function ValueCard({ label, value, type = "default", subtitle = "
   const style = getStyle();
 
   return (
-    <div className={`p-4 border rounded-lg shadow-sm flex items-start gap-3 w-full ${style.bg}`}>
-      <div className="p-2 bg-white rounded-md shadow-xs border border-gray-100 flex-shrink-0">
+    <div className={`p-4 border-[0.5px] rounded-xl flex items-start gap-3 w-full ${style.bg} shadow-none`}>
+      <div className="p-2 bg-white rounded-lg border-[0.5px] border-outline-variant flex-shrink-0">
         {style.icon}
       </div>
       <div>
-        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider block">
+        <span className="text-[10px] font-bold text-outline uppercase tracking-wider block">
           {label}
         </span>
-        <span className={`text-xl font-bold tracking-tight block ${style.color}`}>
+        <span className={`text-base font-black tracking-tight block mt-0.5 ${style.color}`}>
           {value}
         </span>
         {subtitle && (
-          <span className="text-xs font-medium text-gray-400 mt-0.5 block">
+          <span className="text-[10px] font-medium text-outline mt-1 block leading-tight">
             {subtitle}
           </span>
         )}

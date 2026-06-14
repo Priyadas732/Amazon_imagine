@@ -7,6 +7,8 @@ import { getUploadUrl } from "../controllers/upload.controller.js";
 import { getItemById, updateItemById } from "../controllers/item.controller.js";
 import { getCategoryRequirements } from "../controllers/requirements.controller.js";
 import { checkPurchaseRisk } from "../controllers/preventionEngine.js";
+import { checkReturnRiskController } from "../controllers/returnRisk.controller.js";
+import { downloadBuffer } from "../services/s3.service.js";
 
 const router = Router();
 
@@ -40,5 +42,22 @@ router.get("/requirements", getCategoryRequirements);
 
 // POST /evaluate-risk - Assess purchase risk dynamically
 router.post("/evaluate-risk", requireRole("buyer", "seller", "donor", "ngo", "admin"), checkPurchaseRisk);
+
+// POST /predict-return - Predict purchase return risk based on telemetry data
+router.post("/predict-return", requireRole("buyer", "seller", "donor", "ngo", "admin"), checkReturnRiskController);
+
+// GET /image/:itemId/:filename - Serve private S3 images directly
+router.get("/image/:itemId/:filename", async (req, res, next) => {
+  try {
+    const { itemId, filename } = req.params;
+    const key = `${itemId}/${filename}`;
+    const { buffer, contentType } = await downloadBuffer(key);
+    res.setHeader("Content-Type", contentType || "image/jpeg");
+    res.send(buffer);
+  } catch (err) {
+    console.error("Failed to serve image from S3:", err);
+    res.status(404).send("Image not found");
+  }
+});
 
 export default router;

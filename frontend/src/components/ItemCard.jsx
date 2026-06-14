@@ -18,9 +18,9 @@ export default function ItemCard({ item }) {
   const savings = Math.round(((originalPrice - price) / originalPrice) * 100);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-md overflow-hidden hover:shadow-md transition-shadow flex flex-col h-full font-sans">
+    <div className="bg-white border-[0.5px] border-outline-variant rounded-xl overflow-hidden hover:border-deep-navy transition-colors flex flex-col h-full font-sans shadow-none">
       {/* Product Image */}
-      <div className="relative bg-gray-50 h-48 flex items-center justify-center p-4 border-b border-gray-100 flex-shrink-0">
+      <div className="relative bg-surface-container-low h-48 flex items-center justify-center p-4 border-b border-surface-container flex-shrink-0">
         <img
           src={photo}
           alt={model}
@@ -30,52 +30,52 @@ export default function ItemCard({ item }) {
           }}
         />
         {/* Distance Pin */}
-        <div className="absolute top-2 left-2 bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded-md text-[10px] font-bold flex items-center gap-1">
+        <div className="absolute top-3 left-3 bg-emerald-50 text-emerald-800 border-[0.5px] border-emerald-200 px-2 py-0.5 rounded-md text-[10px] font-bold flex items-center gap-1">
           <MapPin className="w-3 h-3 text-emerald-600 fill-current" />
           {distance} km away
         </div>
       </div>
 
       {/* Product Body */}
-      <div className="p-4 flex-grow flex flex-col">
+      <div className="p-5 flex-grow flex flex-col">
         {/* Title */}
-        <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 hover:text-amazon-teal mb-1">
+        <h3 className="text-sm font-bold text-ink-black line-clamp-2 hover:text-link-blue mb-1 leading-snug">
           <Link to={`/buyer/item/${itemId}`}>{model}</Link>
         </h3>
 
         {/* Certified Badge */}
-        <div className="flex items-center gap-1 text-[11px] font-bold text-amazon-teal mb-3">
+        <div className="flex items-center gap-1 text-[10px] font-bold text-link-blue mb-3 uppercase tracking-tight">
           <ShieldCheck className="w-4 h-4 fill-cyan-50 text-cyan-600" />
           <span>
             {item.grade?.gradedBy === "fallback" 
-              ? "Amazon Certified · Standard Return" 
-              : "Amazon Certified · AI-Verified"}
+              ? "Certified · Standard Return" 
+              : "Certified · AI-Verified"}
           </span>
         </div>
 
         {/* Grade */}
-        <div className="mb-3">
+        <div className="mb-4">
           <GradeBadge grade={grade} size="sm" />
         </div>
 
         {/* Pricing */}
         <div className="mt-auto">
           <div className="flex items-baseline gap-1.5 flex-wrap">
-            <span className="text-lg font-bold text-amazon-red">${price}</span>
-            <span className="text-xs text-gray-500 line-through">${originalPrice}</span>
-            <span className="text-xs font-bold text-amazon-green">({savings}% off)</span>
+            <span className="text-lg font-black text-amazon-red">${price}</span>
+            <span className="text-xs text-outline line-through">${originalPrice}</span>
+            <span className="text-xs font-bold text-green-700">({savings}% off)</span>
           </div>
-          <div className="text-[10px] text-gray-500 mt-0.5">
+          <div className="text-[10px] text-outline mt-1 font-medium">
             Eligible for FREE Shipping
           </div>
         </div>
       </div>
 
       {/* Button footer */}
-      <div className="px-4 pb-4 flex-shrink-0">
+      <div className="px-5 pb-5 flex-shrink-0">
         <Link
           to={`/buyer/item/${itemId}`}
-          className="w-full text-center block bg-amazon-yellow hover:bg-amazon-yellowHover text-gray-900 font-semibold text-xs py-1.5 px-3 rounded-full shadow-xs border border-yellow-400 hover:border-yellow-500"
+          className="w-full text-center block bg-secondary-container hover:bg-[#e68a00] text-ink-black font-bold text-xs py-2 px-4 rounded-xl border-[0.5px] border-outline-variant transition-colors uppercase tracking-wider"
         >
           See Details
         </Link>

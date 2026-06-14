@@ -12,24 +12,24 @@ export default function GradeBadge({ grade, size = "md" }) {
     const g = String(grade || "").trim();
     if (g === "New" || g === "Like New") {
       return {
-        bg: "bg-emerald-50 text-emerald-700 border-emerald-300",
+        bg: "bg-emerald-50 text-emerald-800 border-emerald-300",
         label: "New / Mint",
       };
     }
     if (g === "Very Good") {
       return {
-        bg: "bg-blue-50 text-blue-700 border-blue-300",
+        bg: "bg-blue-50 text-blue-800 border-blue-300",
         label: "Very Good",
       };
     }
     if (g === "Good" || g === "Acceptable") {
       return {
-        bg: "bg-amber-50 text-amber-700 border-amber-300",
+        bg: "bg-amber-50 text-amber-800 border-amber-300",
         label: "Good / Used",
       };
     }
     return {
-      bg: "bg-rose-50 text-rose-700 border-rose-300",
+      bg: "bg-red-50 text-red-800 border-red-300",
       label: "Damaged / Scrap",
     };
   };
@@ -37,13 +37,13 @@ export default function GradeBadge({ grade, size = "md" }) {
   const styles = getStyles();
   
   const sizeClasses = {
-    sm: "px-2 py-0.5 text-xs font-semibold border rounded",
-    md: "px-3 py-1 text-sm font-bold border rounded-md shadow-sm",
-    lg: "px-5 py-2.5 text-lg font-black border-2 rounded-xl shadow-md tracking-wide",
+    sm: "px-2 py-0.5 text-[10px] font-bold border-[0.5px] rounded-lg tracking-tight",
+    md: "px-3.5 py-1 text-xs font-bold border-[0.5px] rounded-lg tracking-normal",
+    lg: "px-5 py-2 text-sm font-black border-[0.5px] rounded-xl tracking-wider uppercase",
   };
 
   return (
-    <span className={`inline-flex items-center gap-1.5 font-sans ${sizeClasses[size]} ${styles.bg}`}>
+    <span className={`inline-flex items-center gap-1.5 font-sans uppercase ${sizeClasses[size]} ${styles.bg}`}>
       <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
       {styles.label} ({grade})
     </span>

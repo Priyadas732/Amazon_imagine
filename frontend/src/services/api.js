@@ -173,18 +173,39 @@ export async function evaluateRisk({ productId, currentSpecs, userId, role }) {
  * @param {number} params.originalPrice
  * @returns {Promise<object>}
  */
-export async function getDisposition({ productName, grade, originalPrice }) {
+export async function getDisposition({ productName, category, grade, originalPrice, region }) {
   const res = await fetch(`${API_BASE}/dispose`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ productName, grade, originalPrice }),
+    body: JSON.stringify({ productName, category, grade, originalPrice, region }),
   });
 
   if (!res.ok) {
     const errData = await res.json();
     throw new Error(errData.error || "Failed to fetch routing disposition");
+  }
+
+  return res.json();
+}
+
+/**
+ * Request return risk prediction calculations from the backend.
+ */
+export async function getReturnRisk({ userId, productId, chosenSize, role }) {
+  const res = await fetch(`${API_BASE}/predict-return`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-role": role || "buyer",
+    },
+    body: JSON.stringify({ userId, productId, chosenSize }),
+  });
+
+  if (!res.ok) {
+    const errData = await res.json();
+    throw new Error(errData.error || "Failed to predict return risk");
   }
 
   return res.json();
