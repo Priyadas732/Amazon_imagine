@@ -1,6 +1,7 @@
 import { GEMINI_API_KEY } from "../../config/setting.js";
 import * as dynamoService from "../services/dynamo.service.js";
 import { generateContentWithRotation } from "../services/gemini.service.js";
+import { predictReturnRisk } from "../services/predictReturnRisk.js";
 
 // Fallback items to simulate real database records in development/demo context
 const FALLBACK_ITEMS = {
@@ -204,72 +205,48 @@ Instructions: Determine the probability of return. If the category is electronic
           }
         };
       } else {
+        const normUserId = (userId === "u1" || userId === "u2") ? userId : (userId && userId.toLowerCase().includes("rahul") ? "u2" : "u1");
+        const chosenSize = currentSpecs?.size || currentSpecs?.carrier || currentSpecs?.cleared || "";
+        const prediction = predictReturnRisk(normUserId, productId, chosenSize);
+
         let strategy = "NONE";
-        let headline = "";
-        let body = "";
+        let headline = "⚠️ AI Return Prevention Alert";
         let actionButtonText = "";
         let suggestedAlternativeSpecs = {};
-        let checksBreakdown = {};
-        let riskPercent = 15;
-        let showAlert = false;
 
         if (product.category === "footwear") {
-          riskPercent = 71;
-          showAlert = true;
           strategy = "CAMERA_VERIFICATION";
-          headline = "⚠️ AI Return Prevention Alert";
-          body = "Heads up! Nike runs small. You returned similar footwear twice last year (Reason: 'too small'). Sizing cohorts suggest size 7.5 instead.";
+          headline = "⚠️ AI Sizing Warning (Nike runs small)";
           actionButtonText = "Scan Fit with AI (A4 Paper Ref)";
-          suggestedAlternativeSpecs = { size: "7.5" };
-          checksBreakdown = {
-            history: "She returned 2 Nike shoes last year. Reason: 'too small'",
-            pattern: "This Nike model has 34% return rate. Top reason: sizing",
-            cohort: "People like her bought size 7.5 and kept it"
-          };
+          suggestedAlternativeSpecs = { size: prediction.suggestion || "7.5" };
         } else if (product.category === "clothing") {
-          riskPercent = 68;
-          showAlert = true;
           strategy = "CAMERA_VERIFICATION";
           headline = "⚠️ AI Sizing Conflict Detected";
-          body = "This Patagonia jacket runs slightly larger. You returned size L clothing recently for being too loose. Cohorts recommend size M.";
           actionButtonText = "Scan Face Mesh for Fitting (Credit Card Ref)";
-          suggestedAlternativeSpecs = { size: "M" };
-          checksBreakdown = {
-            history: "She returned size L clothing recently. Reason: 'too loose'",
-            pattern: "This Patagonia model has 22% return rate. Top reason: runs large",
-            cohort: "People like her bought size M and kept it"
-          };
+          suggestedAlternativeSpecs = { size: prediction.suggestion || "M" };
         } else if (product.category === "appliance" || product.category === "furniture") {
-          riskPercent = 55;
-          showAlert = true;
           strategy = "CAMERA_VERIFICATION";
           headline = "⚠️ AI Placement & Clearance Warning";
-          body = "This professional blender has a tall profile (45cm). Customers in your cohort frequently return it because it doesn't clear kitchen cabinets.";
           actionButtonText = "Measure Room Clearance (Door Ref)";
           suggestedAlternativeSpecs = { cleared: "true" };
-          checksBreakdown = {
-            history: "She returned 1 appliance last year. Reason: 'exceeded counter height'",
-            pattern: "Blender has 15% return rate. Top reason: cabinet clearance",
-            cohort: "Buyers with similar layouts chose smaller profiles"
-          };
         } else if (product.category === "electronics") {
-          riskPercent = 45;
-          showAlert = true;
           strategy = "SMART_SWAP";
           headline = "⚠️ Carrier Compatibility Warning";
-          body = "This Galaxy S22 is locked to T-Mobile. You purchased and kept Verizon compatible items recently. Cohorts recommend swapping to the Unlocked model.";
           actionButtonText = "Swap to Unlocked Version (+$20)";
           suggestedAlternativeSpecs = { carrier: "Unlocked" };
-          checksBreakdown = {
-            history: "You returned 1 network-locked phone last year.",
-            pattern: "This carrier-locked ASIN has a 12% return rate.",
-            cohort: "Buyers with your network history bought the Unlocked model."
-          };
         }
 
+        const body = prediction.signals.map(s => s.text).join(" ") || `Base return risk computed from category baseline profile.`;
+
+        const checksBreakdown = {
+          history: prediction.signals.find(s => s.type === "personal")?.text || "No prior return warnings in this category.",
+          pattern: prediction.signals.find(s => s.type === "product")?.text || "Base category return rate is normal.",
+          cohort: prediction.signals.find(s => s.type === "cohort")?.text || "Cohort size patterns match choice."
+        };
+
         directive = {
-          riskPercent,
-          showAlert,
+          riskPercent: prediction.riskPct,
+          showAlert: prediction.warn,
           interventionStrategy: strategy,
           uiCopy: { headline, body, actionButtonText },
           suggestedAlternativeSpecs,

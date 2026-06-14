@@ -100,6 +100,7 @@ export default function ItemDetail({ role }) {
   
   // Risk Engine directives
   const [riskDirective, setRiskDirective] = useState(null);
+  const [activeUserId, setActiveUserId] = useState("u1"); // u1: Priya (risky), u2: Rahul (clean)
   
   // Active test configurations for 3D Camera Scan
   const [activeTestDetails, setActiveTestDetails] = useState(getVirtualTestDetails("A4_SPATIAL_SCAN"));
@@ -170,7 +171,7 @@ export default function ItemDetail({ role }) {
       clearTimeout(timer3);
       clearTimeout(timer4);
     };
-  }, [id, category]);
+  }, [id, category, activeUserId]);
 
   // Handle the scanning simulation process
   useEffect(() => {
@@ -264,6 +265,37 @@ export default function ItemDetail({ role }) {
             </div>
           </div>
 
+          {/* Demo Simulator User Switcher */}
+          <div className="bg-slate-100 border border-gray-200 rounded-lg p-3.5 space-y-2 font-sans shadow-2xs mb-4">
+            <span className="text-[10px] font-extrabold text-gray-500 uppercase tracking-tight block">
+              Demo Simulator User Profile:
+            </span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setActiveUserId("u1")}
+                className={`flex-grow py-1 px-3 rounded-full text-[11px] font-extrabold border cursor-pointer transition-all ${
+                  activeUserId === "u1"
+                    ? "bg-slate-900 border-slate-900 text-white shadow-xs"
+                    : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                👤 Priya (Nike size 7 returner)
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveUserId("u2")}
+                className={`flex-grow py-1 px-3 rounded-full text-[11px] font-extrabold border cursor-pointer transition-all ${
+                  activeUserId === "u2"
+                    ? "bg-slate-900 border-slate-900 text-white shadow-xs"
+                    : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                👤 Rahul (No returns history)
+              </button>
+            </div>
+          </div>
+
           {/* AI Return Prevention Engine Area */}
           {preventionChecking ? (
             <div className="bg-slate-900 border border-slate-800 rounded-lg p-5 text-white font-sans space-y-4 shadow-md animate-pulse">
@@ -320,7 +352,7 @@ export default function ItemDetail({ role }) {
                   ? { carrier: carrierSelected }
                   : { cleared: sizeScanned ? "true" : "false", scanned: sizeScanned }
               }
-              userId="user-priya-99"
+              userId={activeUserId}
               role={role}
               onLaunchCamera={(testType) => {
                 setActiveTestDetails(getVirtualTestDetails(testType));
