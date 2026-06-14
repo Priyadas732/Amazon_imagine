@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import * as s3Service from "../services/s3.service.js";
 import * as dynamoService from "../services/dynamo.service.js";
 import * as geminiService from "../services/gemini.service.js";
+import { routeItem } from "../services/routeItem.js";
 import { S3_BUCKET_NAME } from "../../config/setting.js";
 
 /**
@@ -52,12 +53,21 @@ export async function gradeItem(req, res, next) {
     // Determine S3 URLs
     const photos = imageKeys.map((k) => `https://${S3_BUCKET_NAME}.s3.${process.env.AWS_REGION || 'ap-south-1'}.amazonaws.com/${k}`);
 
+    // Calculate disposition routing
+    const originalPrice = payloadProvided.originalPrice || (activeCategory === "electronics" ? 999 : activeCategory === "footwear" ? 120 : activeCategory === "clothing" ? 60 : 250);
+    const dispositionResult = routeItem({
+      productName: payloadProvided.model || activeCategory,
+      grade: gradeResult.grade || "Good",
+      originalPrice
+    });
+
     const item = {
       itemId,
       category: activeCategory,
-      provided: payloadProvided,
+      provided: { ...payloadProvided, originalPrice },
       photos,
       grade: gradeResult,
+      dispositionResult,
       status: "graded",
       createdAt: new Date().toISOString(),
     };

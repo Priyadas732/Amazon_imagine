@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ShieldCheck, AlertTriangle, Leaf, DollarSign, Award, ArrowLeft, RefreshCw, ShoppingBag, Sparkles } from "lucide-react";
-import { getItem, updateItem } from "../../services/api";
+import { getItem, updateItem, getDisposition } from "../../services/api";
 import GradeBadge from "../../components/GradeBadge";
 import StatusPill from "../../components/StatusPill";
 import ValueCard from "../../components/ValueCard";
@@ -22,12 +22,39 @@ export default function GradingResult({ role }) {
   const [donated, setDonated] = useState(false);
   const [laterallyRouted, setLaterallyRouted] = useState(false);
   const [extraCredits, setExtraCredits] = useState(0);
+  const [dispositionResult, setDispositionResult] = useState(null);
+  const [loadingDisposition, setLoadingDisposition] = useState(false);
 
   // Synchronize state with backend item data once fetched
   React.useEffect(() => {
     if (item) {
       setDonated(item.status === "donated");
       setLaterallyRouted(item.status === "laterally_routed");
+    }
+  }, [item]);
+
+  // Fetch routing disposition
+  React.useEffect(() => {
+    if (item) {
+      if (item.dispositionResult) {
+        setDispositionResult(item.dispositionResult);
+      } else {
+        setLoadingDisposition(true);
+        const originalPrice = item.provided?.originalPrice || (item.category === "electronics" ? 999 : 120);
+        getDisposition({
+          productName: item.provided?.model || item.category || "Returned Item",
+          grade: item.grade?.grade || "Good",
+          originalPrice,
+        })
+          .then((data) => {
+            setDispositionResult(data);
+            setLoadingDisposition(false);
+          })
+          .catch((err) => {
+            console.error("Failed to fetch routing disposition:", err);
+            setLoadingDisposition(false);
+          });
+      }
     }
   }, [item]);
 
@@ -119,33 +146,55 @@ export default function GradingResult({ role }) {
   let creditEarned = 100;
   let dispText = "Restocked in used warehouse for resell.";
 
-  if (donated || item.status === "donated") {
+  if (donated) {
     disposition = "Donate";
     valueRecovered = 0;
     creditEarned = 300;
     dispText = "Donation completed: Assigned to Goonj NGO.";
-  } else if (laterallyRouted || item.status === "laterally_routed") {
+  } else if (laterallyRouted) {
     disposition = "Lateral Redirect";
     creditEarned = gradeVal === "New" || gradeVal === "Like New" ? 50 : 100;
     dispText = "Bypassed warehouse. Dispatched laterally to nearby buyer Amit K.";
-  } else if (gradeVal === "New" || gradeVal === "Like New") {
-    disposition = "Resell";
-    creditEarned = 50;
-    dispText = "Approved for direct restock as Open-Box/Like-New item.";
-  } else if (gradeVal === "Very Good" || gradeVal === "Good") {
-    disposition = "Refurbish";
-    creditEarned = 150;
-    dispText = "Routed to refurbishment center for detail clean & package restoration.";
-  } else if (gradeVal === "Acceptable") {
-    disposition = "Donate";
-    valueRecovered = 0; // donating doesn't recover monetary sales, but gives high credits
-    creditEarned = 300;
-    dispText = "Donation routing: Assigned to NGO partner returns directory.";
+  } else if (dispositionResult) {
+    disposition = dispositionResult.decision;
+    valueRecovered = dispositionResult.recovered;
+    dispText = dispositionResult.reason;
+    // Map disposition to matching credit brackets
+    if (disposition.startsWith("Resell as New")) creditEarned = 50;
+    else if (disposition.startsWith("Resell")) creditEarned = 100;
+    else if (disposition.startsWith("Refurbish")) creditEarned = 150;
+    else if (disposition.startsWith("Donate")) creditEarned = 300;
+    else if (disposition.startsWith("Recycle")) creditEarned = 450;
+    else if (disposition.startsWith("Liquidation")) creditEarned = 200;
   } else {
-    disposition = "Recycle";
-    valueRecovered = Math.round(originalPrice * 0.05); // scrap scrap value
-    creditEarned = 450;
-    dispText = "Recycler routing: Certified raw materials extraction.";
+    if (donated || item.status === "donated") {
+      disposition = "Donate";
+      valueRecovered = 0;
+      creditEarned = 300;
+      dispText = "Donation completed: Assigned to Goonj NGO.";
+    } else if (laterallyRouted || item.status === "laterally_routed") {
+      disposition = "Lateral Redirect";
+      creditEarned = gradeVal === "New" || gradeVal === "Like New" ? 50 : 100;
+      dispText = "Bypassed warehouse. Dispatched laterally to nearby buyer Amit K.";
+    } else if (gradeVal === "New" || gradeVal === "Like New") {
+      disposition = "Resell";
+      creditEarned = 50;
+      dispText = "Approved for direct restock as Open-Box/Like-New item.";
+    } else if (gradeVal === "Very Good" || gradeVal === "Good") {
+      disposition = "Refurbish";
+      creditEarned = 150;
+      dispText = "Routed to refurbishment center for detail clean & package restoration.";
+    } else if (gradeVal === "Acceptable") {
+      disposition = "Donate";
+      valueRecovered = 0; // donating doesn't recover monetary sales, but gives high credits
+      creditEarned = 300;
+      dispText = "Donation routing: Assigned to NGO partner returns directory.";
+    } else {
+      disposition = "Recycle";
+      valueRecovered = Math.round(originalPrice * 0.05); // scrap scrap value
+      creditEarned = 450;
+      dispText = "Recycler routing: Certified raw materials extraction.";
+    }
   }
 
   const finalCredits = creditEarned + (item.extraCredits || 0) + extraCredits;
@@ -296,6 +345,103 @@ export default function GradingResult({ role }) {
             subtitle="Verified via Gemini Vision reasoning checks"
           />
         </div>
+
+        {/* Circular Routing Decision Engine Comparison Card */}
+        {dispositionResult && (
+          <div className="border border-slate-700/60 rounded-lg p-5 mb-6 bg-slate-900 text-white shadow-xl">
+            <h3 className="text-sm font-extrabold uppercase tracking-wider mb-2 flex items-center gap-1.5 text-cyan-400">
+              <Sparkles className="w-5 h-5 text-cyan-400 animate-pulse" />
+              Circular Routing Decision Engine
+            </h3>
+            <p className="text-xs text-slate-300 mb-4">
+              Proof of Optimization: Evaluated candidate channels simultaneously based on live market demand, partner want-lists, and condition grade.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+              {/* Channel list comparison */}
+              <div className="space-y-3">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block border-b border-white/5 pb-1">
+                  Candidate Channels Evaluation
+                </span>
+                
+                <div className="space-y-2">
+                  {dispositionResult.comparedAgainst?.map((c, idx) => {
+                    const isWinner = c.channel === dispositionResult.decision;
+                    const isLiquidation = c.channel === "Liquidation";
+
+                    return (
+                      <div
+                        key={idx}
+                        className={`flex items-center justify-between p-3 rounded-lg border transition-all ${
+                          isWinner
+                            ? "bg-emerald-955 border-emerald-500/50 shadow-emerald-500/10 shadow-sm"
+                            : "bg-white/5 border-white/5 hover:bg-white/10"
+                        }`}
+                      >
+                        <div className="space-y-1">
+                          <span className="text-xs font-bold block flex items-center gap-1.5 text-slate-100">
+                            {c.channel}
+                            {isWinner && (
+                              <span className="text-[8px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded-full">
+                                Optimized Path
+                              </span>
+                            )}
+                            {isLiquidation && (
+                              <span className="text-[8px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded-full">
+                                Amazon Baseline
+                              </span>
+                            )}
+                          </span>
+                          <span className="text-[10px] text-slate-400 block">
+                            {c.eligible ? "Eligible for routing" : "Ineligible (Quality criteria)"}
+                          </span>
+                        </div>
+                        
+                        <div className="text-right">
+                          <span className={`text-sm font-extrabold ${isWinner ? "text-emerald-400" : "text-slate-200"}`}>
+                            ${c.value}
+                          </span>
+                          <span className="text-[9px] text-slate-400 block">recovered</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Optimizing banner / stats */}
+              <div className="bg-white/5 border border-white/5 p-4 rounded-lg space-y-4 h-full flex flex-col justify-between">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block border-b border-white/5 pb-1 mb-3">
+                    Routing ROI Optimizer
+                  </span>
+                  
+                  {dispositionResult.multiple && (
+                    <div className="flex items-baseline gap-1 mt-2">
+                      <span className="text-4xl font-extrabold text-emerald-400 tracking-tight">
+                        {dispositionResult.multiple}x
+                      </span>
+                      <span className="text-xs font-semibold text-slate-300">
+                        Value Multiplier
+                      </span>
+                    </div>
+                  )}
+                  
+                  <p className="text-xs text-slate-300 mt-3 leading-relaxed font-medium">
+                    {dispositionResult.reason}
+                  </p>
+                </div>
+
+                <div className="bg-emerald-950/20 border border-emerald-500/20 text-emerald-300 rounded-md p-3 text-xs flex items-center gap-2 font-medium">
+                  <ShieldCheck className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                  <span>
+                    Simultaneous routing analysis completed. Saved ${Math.max(0, dispositionResult.recovered - (dispositionResult.vsLiquidation || 0))} over liquidation.
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* AI Circular Routing & Sustainability Dashboard */}
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-5 mb-6">

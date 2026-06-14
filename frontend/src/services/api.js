@@ -164,3 +164,28 @@ export async function evaluateRisk({ productId, currentSpecs, userId, role }) {
 
   return res.json();
 }
+
+/**
+ * Fetch routing disposition analysis.
+ * @param {object} params
+ * @param {string} params.productName
+ * @param {string} params.grade
+ * @param {number} params.originalPrice
+ * @returns {Promise<object>}
+ */
+export async function getDisposition({ productName, grade, originalPrice }) {
+  const res = await fetch(`${API_BASE}/dispose`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ productName, grade, originalPrice }),
+  });
+
+  if (!res.ok) {
+    const errData = await res.json();
+    throw new Error(errData.error || "Failed to fetch routing disposition");
+  }
+
+  return res.json();
+}
