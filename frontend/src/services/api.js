@@ -1,6 +1,8 @@
-// frontend/src/services/api.js
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+let API_BASE_RAW = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+if (API_BASE_RAW.endsWith("/")) {
+  API_BASE_RAW = API_BASE_RAW.slice(0, -1);
+}
+const API_BASE = API_BASE_RAW;
 
 /**
  * Fetch presigned S3 upload URL from the backend.
