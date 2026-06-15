@@ -6,10 +6,20 @@ const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
 function rewritePhotos(item) {
   if (item && item.photos && Array.isArray(item.photos)) {
     item.photos = item.photos.map(url => {
-      if (typeof url === "string" && url.includes("amazonaws.com")) {
-        const parts = url.split("amazonaws.com/");
-        if (parts.length > 1) {
-          return `${backendUrl}/image/${parts[1]}`;
+      if (typeof url === "string") {
+        if (url.includes("amazonaws.com")) {
+          const parts = url.split("amazonaws.com/");
+          if (parts.length > 1) {
+            return `${backendUrl}/image/${parts[1]}`;
+          }
+        } else if (url.startsWith("s3://")) {
+          // Remove "s3://" prefix, e.g. "s3://bucket-name/item-id/filename"
+          const parts = url.substring(5).split("/");
+          if (parts.length > 1) {
+            // Rejoin all parts after the bucket name
+            const relativePath = parts.slice(1).join("/");
+            return `${backendUrl}/image/${relativePath}`;
+          }
         }
       }
       return url;
