@@ -35,7 +35,7 @@ export default function WarehouseLayout({ children }) {
         
         {/* Left Section: Brand Logo & Divider */}
         <div className="flex items-center gap-3 shrink-0">
-          <div className="flex items-center cursor-pointer" onClick={() => navigate("/warehouse")}>
+          <div className="flex items-center cursor-pointer" onClick={() => navigate("/")}>
             <span className="font-extrabold text-lg tracking-tight text-white">
               amazon<span className="text-[#FF9900] font-black">.in</span>
             </span>
