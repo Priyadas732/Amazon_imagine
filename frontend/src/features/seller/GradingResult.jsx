@@ -26,6 +26,8 @@ export default function GradingResult({ role }) {
   const [dispositionResult, setDispositionResult] = useState(null);
   const [loadingDisposition, setLoadingDisposition] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState("Bangalore");
+  const [savedMessage, setSavedMessage] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   // Synchronize state with backend item data once fetched
   React.useEffect(() => {
@@ -100,17 +102,17 @@ export default function GradingResult({ role }) {
     }
   };
 
-  const handleAcceptAndRoute = () => {
-    if (disposition === "Donate" || disposition.startsWith("Donate")) {
-      navigate(`/partners?itemId=${id}&mode=donate`);
-    } else {
-      updateItem(id, { status: "completed" }, role)
-        .then(() => {
-          navigate("/seller/return");
-        })
-        .catch(() => {
-          navigate("/seller/return");
-        });
+  const handleAcceptAndRoute = async () => {
+    setIsSaving(true);
+    setSavedMessage("");
+    try {
+      await updateItem(id, { status: "completed" }, role);
+      setSavedMessage("data has saved to warehouse database");
+      refetch();
+    } catch (err) {
+      setSavedMessage(`Failed to save: ${err.message}`);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -279,8 +281,17 @@ export default function GradingResult({ role }) {
     : (completeness === "complete" ? 100 : 70);
 
   // Smart Routing Option Payout calculations
-  const resellerPayout = valueRecovered > 0 ? valueRecovered : Math.round(originalPrice * 0.7);
-  const liquidationPayout = dispositionResult?.vsLiquidation || Math.round(originalPrice * 0.25);
+  const resellCandidate = dispositionResult?.comparedAgainst?.find(c => c.channel === "Resell as Certified Used" || c.channel === "Resell as New");
+  const resellVal = resellCandidate ? resellCandidate.value : Math.round(originalPrice * (gradeVal === "New" ? 0.9 : gradeVal === "Like New" ? 0.8 : gradeVal === "Very Good" ? 0.7 : 0.55));
+  
+  const refurbishCandidate = dispositionResult?.comparedAgainst?.find(c => c.channel.startsWith("Refurbish"));
+  const refurbVal = refurbishCandidate ? refurbishCandidate.value : 0;
+
+  const liquidationCandidate = dispositionResult?.comparedAgainst?.find(c => c.channel === "Liquidation");
+  const liqVal = liquidationCandidate ? liquidationCandidate.value : Math.round(originalPrice * 0.15);
+
+  const resellerPayout = disposition.startsWith("Refurbish") && refurbVal > 0 ? refurbVal : resellVal;
+  const liquidationPayout = liqVal;
   const donationValue = 0;
   const consignmentPayout = Math.round(originalPrice * 0.8);
 
@@ -445,6 +456,12 @@ export default function GradingResult({ role }) {
 
             {/* Action buttons */}
             <div className="mt-5 flex flex-col gap-3">
+              {savedMessage && (
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2 text-xs font-bold text-emerald-850 select-none">
+                  <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <span>{savedMessage}</span>
+                </div>
+              )}
               {isRejected ? (
                 <Link
                   to="/seller/return"
@@ -453,8 +470,12 @@ export default function GradingResult({ role }) {
                   <RefreshCw className="w-4 h-4" /> Re-upload Correct Product Photo
                 </Link>
               ) : (
-                <button onClick={handleAcceptAndRoute} className="w-full py-3 bg-secondary-container hover:bg-[#e68a00] text-ink-black font-bold rounded-xl transition-all uppercase tracking-wider text-xs border-[0.5px] border-outline-variant cursor-pointer">
-                  Accept Grade & Route Item
+                <button 
+                  onClick={handleAcceptAndRoute} 
+                  disabled={isSaving}
+                  className="w-full py-3 bg-secondary-container hover:bg-[#e68a00] text-ink-black font-bold rounded-xl transition-all uppercase tracking-wider text-xs border-[0.5px] border-outline-variant cursor-pointer disabled:opacity-50"
+                >
+                  {isSaving ? "Saving..." : "Accept Grade & Route Item"}
                 </button>
               )}
               <button onClick={() => refetch()} className="w-full py-3 bg-white border-[0.5px] border-deep-navy text-deep-navy font-bold rounded-xl hover:bg-surface-container-low transition-all uppercase tracking-wider text-xs cursor-pointer">

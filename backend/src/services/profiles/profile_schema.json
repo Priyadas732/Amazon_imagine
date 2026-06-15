@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Category condition profile",
+  "description": "The contract every item category must follow. The generic engine reads this; it never hardcodes anything about a specific item type.",
+  "type": "object",
+  "required": ["category", "version", "capture_angles", "attributes", "routing"],
+  "properties": {
+    "category": { "type": "string", "description": "e.g. phone, laptop, furniture, clothing, generic_fallback" },
+    "version": { "type": "string" },
+    "capture_angles": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Required photos for this item. The capture UI enforces these before grading."
+    },
+    "attributes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "type", "source"],
+        "properties": {
+          "id": { "type": "string" },
+          "label": { "type": "string" },
+          "type": { "enum": ["cosmetic", "functional", "identity"] },
+          "source": { "enum": ["vision", "questionnaire", "lookup", "diagnostic"] },
+          "value_type": { "enum": ["categorical", "number", "boolean"], "default": "categorical" },
+          "severity_levels": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Ordered best->worst, for categorical attributes."
+          },
+          "grade_caps": {
+            "type": "object",
+            "description": "Maps a categorical/boolean value to the MAXIMUM grade it allows. e.g. { \"hairline\": \"C\" }"
+          },
+          "grade_caps_numeric": {
+            "type": "array",
+            "description": "For numeric attributes. Each band: value >= min => this cap. Sort highest min first.",
+            "items": {
+              "type": "object",
+              "required": ["min", "cap"],
+              "properties": { "min": { "type": "number" }, "cap": { "enum": ["A", "B", "C", "D", "E"] } }
+            }
+          },
+          "blocks_resale": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Values that legally/practically forbid reselling (e.g. blacklisted IMEI)."
+          },
+          "question": { "type": "string", "description": "Shown to the user when source = questionnaire." }
+        }
+      }
+    },
+    "routing": {
+      "type": "object",
+      "required": ["allowed_routes"],
+      "properties": {
+        "allowed_routes": {
+          "type": "array",
+          "items": { "enum": ["resell", "refurbish", "recycle", "donate"] }
+        }
+      }
+    }
+  }
+}

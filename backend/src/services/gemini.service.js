@@ -1,8 +1,7 @@
-// src/services/gemini.service.js
 import { readFileSync, writeFileSync } from "node:fs";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GRADING_REQUIREMENTS } from "../utils/gradingRequirements.js";
-import { GEMINI_API_KEY } from "../../config/setting.js";
+import { GEMINI_API_KEY, GEMINI_MODEL } from "../../config/setting.js";
 
 // Simple Mutex for sequential locking
 class Mutex {
@@ -35,7 +34,7 @@ function getNextApiKey() {
 }
 
 export async function generateContentWithRotation(promptParts, options = {}) {
-  const modelName = options.model || "gemini-2.0-flash-lite";
+  const modelName = options.model || GEMINI_MODEL;
   const generationConfig = options.generationConfig || {};
 
   const release = await apiMutex.acquire();

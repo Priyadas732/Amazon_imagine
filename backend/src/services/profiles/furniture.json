@@ -1,0 +1,56 @@
+{
+  "category": "furniture",
+  "version": "1.0",
+  "capture_angles": ["front", "back", "left_side", "right_side", "top", "cushions_removed", "underside"],
+  "attributes": [
+    {
+      "id": "stains",
+      "label": "Stains / discoloration",
+      "type": "cosmetic",
+      "source": "vision",
+      "value_type": "categorical",
+      "severity_levels": ["none", "light", "moderate", "heavy"],
+      "grade_caps": { "none": "A", "light": "B", "moderate": "C", "heavy": "E" }
+    },
+    {
+      "id": "tears",
+      "label": "Tears / rips in fabric",
+      "type": "cosmetic",
+      "source": "vision",
+      "value_type": "categorical",
+      "severity_levels": ["none", "small", "large"],
+      "grade_caps": { "none": "A", "small": "C", "large": "E" }
+    },
+    {
+      "id": "frame_stability",
+      "label": "Frame stability",
+      "type": "functional",
+      "source": "questionnaire",
+      "value_type": "categorical",
+      "question": "Is the frame solid, slightly wobbly, or broken?",
+      "severity_levels": ["solid", "wobbly", "broken"],
+      "grade_caps": { "solid": "A", "wobbly": "C", "broken": "E" }
+    },
+    {
+      "id": "sagging",
+      "label": "Cushion / seat sagging",
+      "type": "functional",
+      "source": "questionnaire",
+      "value_type": "categorical",
+      "question": "Do the cushions hold their shape, or sag?",
+      "severity_levels": ["firm", "slight", "severe"],
+      "grade_caps": { "firm": "A", "slight": "B", "severe": "C" }
+    },
+    {
+      "id": "odor",
+      "label": "Odor",
+      "type": "functional",
+      "source": "questionnaire",
+      "value_type": "categorical",
+      "question": "Any persistent odor (smoke, pet, mildew)?",
+      "severity_levels": ["none", "mild", "strong"],
+      "grade_caps": { "none": "A", "mild": "C", "strong": "E" }
+    }
+  ],
+  "routing": { "allowed_routes": ["resell", "refurbish", "recycle", "donate"] }
+}

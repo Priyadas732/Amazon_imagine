@@ -20,7 +20,23 @@ export function getOrderNumber(returnId) {
     "ret-boat-rockerz-005": "773-5590-2281",
     "ret-prestige-mixer-006": "660-1127-8854"
   };
-  return mapping[returnId] || returnId;
+  if (mapping[returnId]) return mapping[returnId];
+  if (!returnId) return "000-0000-0000";
+  
+  // Deterministic hash of returnId to 14 digits
+  let hash = 0;
+  for (let i = 0; i < returnId.length; i++) {
+    hash = (hash << 5) - hash + returnId.charCodeAt(i);
+    hash |= 0;
+  }
+  let hashStr = Math.abs(hash).toString();
+  while (hashStr.length < 14) {
+    hashStr += (hashStr.charCodeAt(hashStr.length - 1) || 7).toString();
+  }
+  const p1 = hashStr.slice(0, 3);
+  const p2 = hashStr.slice(3, 10);
+  const p3 = hashStr.slice(10, 14);
+  return `${p1}-${p2}-${p3}`;
 }
 
 export function getOriginalPrice(returnId) {

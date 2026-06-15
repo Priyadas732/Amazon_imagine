@@ -66,16 +66,50 @@ export default function ReturnPreventionGuard({
 
   return (
     <div className="space-y-4">
+
       {/* Sizing Caution Alert if risk is high */}
       {showAlert && uiCopy && (
-        <div className="bg-[#FFF8E1] border-[0.5px] border-secondary-container p-4 rounded-lg flex gap-3 select-none">
-          <AlertTriangle className="w-5 h-5 text-secondary-container flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="text-xs font-bold text-secondary uppercase tracking-wider">Sizing Caution</p>
-            <p className="text-xs text-ink-black mt-1 font-medium leading-relaxed">
-              {uiCopy.body || "Sizing parameters show higher return risk."}
-            </p>
+        <div className="bg-[#FFF8E1] border border-[#f0c040] rounded-xl p-4 space-y-3 select-none flex flex-col">
+          <div className="flex items-start gap-2.5">
+            <AlertTriangle className="w-5 h-5 text-[#e68a00] flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-extrabold text-[#b45309]">Sizing Caution — Return Risk: {riskPercent}%</p>
+              <p className="text-xs text-[#78350f] mt-1 font-semibold leading-relaxed">
+                {uiCopy.body || "Sizing parameters show higher return risk."}
+              </p>
+            </div>
           </div>
+
+          {checksBreakdown && (
+            <div className="border-t border-[#f0c040]/30 pt-2.5 space-y-2 text-xs text-[#78350f] leading-relaxed font-medium">
+              {checksBreakdown.pattern && (
+                <p>• <strong>Product return baseline:</strong> {checksBreakdown.pattern}</p>
+              )}
+              {checksBreakdown.history && (
+                <p>• <strong>Personal history check:</strong> {checksBreakdown.history}</p>
+              )}
+              {checksBreakdown.cohort && (
+                <p>• <strong>Cohort alignment:</strong> {checksBreakdown.cohort}</p>
+              )}
+            </div>
+          )}
+
+          {/* Suggested swap button inside the yellow card */}
+          {suggestedAlternativeSpecs && (suggestedAlternativeSpecs.size || suggestedAlternativeSpecs.carrier || suggestedAlternativeSpecs.cleared) && (
+            <div className="pt-1">
+              <button
+                type="button"
+                onClick={() => onSwapSpec(suggestedAlternativeSpecs)}
+                className="w-full bg-[#f59e0b] hover:bg-[#d97706] text-white font-extrabold py-3 rounded-lg transition-all flex items-center justify-center gap-2 text-xs uppercase tracking-wider cursor-pointer border-none"
+              >
+                Switch to {suggestedAlternativeSpecs.size ? `size ${suggestedAlternativeSpecs.size}` : suggestedAlternativeSpecs.carrier ? suggestedAlternativeSpecs.carrier : "verified spec"}
+              </button>
+            </div>
+          )}
+
+          <p className="text-[10px] text-[#92400e] italic font-medium pt-1">
+            * Illustrative — computed on simulated history & cohort logs.
+          </p>
         </div>
       )}
 
@@ -89,7 +123,7 @@ export default function ReturnPreventionGuard({
             className="w-full bg-[#fbbc04] hover:bg-[#e68a00] text-ink-black font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 text-[13px] cursor-pointer shadow-sm"
           >
             <span className="material-symbols-outlined font-bold text-[18px]">swap_horiz</span>
-            {uiCopy.actionButtonText || `Switch to Size ${suggestedAlternativeSpecs.size || suggestedAlternativeSpecs.carrier}`}
+            {uiCopy?.actionButtonText || `Switch to Size ${suggestedAlternativeSpecs.size || suggestedAlternativeSpecs.carrier}`}
           </button>
         )}
 
@@ -101,7 +135,7 @@ export default function ReturnPreventionGuard({
             className="w-full bg-secondary-container hover:bg-[#e68a00] text-ink-black font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 text-xs uppercase tracking-wider cursor-pointer border-[0.5px] border-outline-variant"
           >
             <span className="material-symbols-outlined">view_in_ar</span>
-            {uiCopy.actionButtonText || "Launch AR Try-on"}
+            {uiCopy?.actionButtonText || "Launch AR Try-on"}
           </button>
         )}
 

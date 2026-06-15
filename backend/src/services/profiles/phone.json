@@ -1,0 +1,67 @@
+{
+  "category": "phone",
+  "version": "1.0",
+  "capture_angles": ["front_screen_on", "front_screen_off", "back", "left_edge", "right_edge", "corners"],
+  "attributes": [
+    {
+      "id": "screen_crack",
+      "label": "Screen crack",
+      "type": "cosmetic",
+      "source": "vision",
+      "value_type": "categorical",
+      "severity_levels": ["none", "hairline", "spiderweb", "shattered"],
+      "grade_caps": { "none": "A", "hairline": "C", "spiderweb": "E", "shattered": "E" }
+    },
+    {
+      "id": "screen_scratch",
+      "label": "Screen scratches",
+      "type": "cosmetic",
+      "source": "vision",
+      "value_type": "categorical",
+      "severity_levels": ["none", "micro", "visible", "deep"],
+      "grade_caps": { "none": "A", "micro": "A", "visible": "B", "deep": "C" }
+    },
+    {
+      "id": "body_dent",
+      "label": "Body dents / scuffs",
+      "type": "cosmetic",
+      "source": "vision",
+      "value_type": "categorical",
+      "severity_levels": ["none", "minor", "moderate", "major"],
+      "grade_caps": { "none": "A", "minor": "B", "moderate": "C", "major": "C" }
+    },
+    {
+      "id": "powers_on",
+      "label": "Powers on and boots",
+      "type": "functional",
+      "source": "questionnaire",
+      "value_type": "boolean",
+      "question": "Does the phone power on and reach the home screen?",
+      "grade_caps": { "true": "A", "false": "E" }
+    },
+    {
+      "id": "battery_health",
+      "label": "Battery health %",
+      "type": "functional",
+      "source": "questionnaire",
+      "value_type": "number",
+      "question": "What is the battery health percentage (Settings > Battery)?",
+      "grade_caps_numeric": [
+        { "min": 90, "cap": "A" },
+        { "min": 80, "cap": "B" },
+        { "min": 0, "cap": "C" }
+      ]
+    },
+    {
+      "id": "imei_status",
+      "label": "IMEI status",
+      "type": "identity",
+      "source": "lookup",
+      "value_type": "categorical",
+      "severity_levels": ["clean", "locked", "blacklisted"],
+      "grade_caps": { "clean": "A", "locked": "E", "blacklisted": "E" },
+      "blocks_resale": ["locked", "blacklisted"]
+    }
+  ],
+  "routing": { "allowed_routes": ["resell", "refurbish", "recycle", "donate"] }
+}

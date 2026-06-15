@@ -1,0 +1,54 @@
+{
+  "category": "generic_fallback",
+  "version": "1.0",
+  "capture_angles": ["front", "back", "all_sides", "close_up_of_damage"],
+  "attributes": [
+    {
+      "id": "surface_damage",
+      "label": "Surface damage (scratches, scuffs)",
+      "type": "cosmetic",
+      "source": "vision",
+      "value_type": "categorical",
+      "severity_levels": ["none", "minor", "moderate", "major"],
+      "grade_caps": { "none": "A", "minor": "B", "moderate": "C", "major": "C" }
+    },
+    {
+      "id": "structural_damage",
+      "label": "Structural / physical damage",
+      "type": "cosmetic",
+      "source": "vision",
+      "value_type": "categorical",
+      "severity_levels": ["none", "minor", "major"],
+      "grade_caps": { "none": "A", "minor": "C", "major": "D" }
+    },
+    {
+      "id": "stains",
+      "label": "Stains / discoloration",
+      "type": "cosmetic",
+      "source": "vision",
+      "value_type": "categorical",
+      "severity_levels": ["none", "light", "heavy"],
+      "grade_caps": { "none": "A", "light": "B", "heavy": "C" }
+    },
+    {
+      "id": "works",
+      "label": "Functions as intended",
+      "type": "functional",
+      "source": "questionnaire",
+      "value_type": "boolean",
+      "question": "Does the item work / function as intended?",
+      "grade_caps": { "true": "A", "false": "D" }
+    },
+    {
+      "id": "completeness",
+      "label": "Complete (all parts/accessories)",
+      "type": "functional",
+      "source": "questionnaire",
+      "value_type": "categorical",
+      "question": "Is it complete with all parts and accessories?",
+      "severity_levels": ["complete", "minor_missing", "major_missing"],
+      "grade_caps": { "complete": "A", "minor_missing": "B", "major_missing": "C" }
+    }
+  ],
+  "routing": { "allowed_routes": ["resell", "refurbish", "recycle", "donate"] }
+}

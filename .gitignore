@@ -23,3 +23,5 @@ build/
 .tempmediaStorage/
 brain/
 *.log
+__pycache__/
+*.pyc

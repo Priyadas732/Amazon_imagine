@@ -9,8 +9,9 @@ export const AWS_REGION            = process.env.AWS_REGION || 'ap-south-1';
 // Set GROQ_API_KEY in your .env file. Get a free key at: https://console.groq.com
 export const GROQ_API_KEY          = process.env.GROQ_API_KEY;
 
-// ─── Gemini (kept for reference; no longer used by grading pipeline) ─────────
+// ─── Gemini ─────────────────────────────────────────────────────────────────
 export const GEMINI_API_KEY        = process.env.GEMINI_API_KEY;
+export const GEMINI_MODEL          = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
 // ─── S3 ─────────────────────────────────────────────────────────────────────
 export const S3_BUCKET_NAME        = process.env.S3_BUCKET_NAME || 'secondlife-returns-photos';
@@ -25,6 +26,7 @@ export default {
   AWS_REGION,
   GROQ_API_KEY,
   GEMINI_API_KEY,
+  GEMINI_MODEL,
   S3_BUCKET_NAME,
   DYNAMO_TABLE_NAME,
 };
